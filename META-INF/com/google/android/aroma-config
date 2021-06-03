@@ -1,0 +1,337 @@
+ini_set("rom_name",             "Panda Kernel");
+ini_set("rom_version",          "@BUILD_VERSION@");
+ini_set("rom_author",           "Pzqqt");
+ini_set("rom_device",           "Whyred");
+ini_set("rom_date",             "@BUILD_DATE@");
+
+ini_set("force_colorspace", "rgba");
+
+fontresload("0", "ttf/Roboto-Regular.ttf", "12");
+fontresload("1", "ttf/Roboto-Regular.ttf", "16"); 
+
+theme("default");
+
+setvar("random_num", resexec("random_num.sh"));
+
+# 2/5
+cmp(getvar("random_num"), ">=", "0") && cmp(getvar("random_num"), "<=", "3") && splash(1500, "splash");
+# 2/5
+cmp(getvar("random_num"), ">=", "4") && cmp(getvar("random_num"), "<=", "7") && splash(1500, "splash_2");
+# 1/5
+cmp(getvar("random_num"), ">=", "8") && splash(2000, "splash_3");
+
+menubox(
+    "\n<@center>Select Language</@>",
+    "<@center><b>\n选择安装器语言\n\n\n\n</b></@>",
+    "",
+    "lang.prop",
+    "English", "", "",
+    "中文 (简体)", "", ""
+);
+
+if prop("lang.prop", "selected") == "1" then
+    loadlang("langs/en.lang");
+    setvar("pa_version",      "Version");
+    setvar("pa_author",       "Author\t");
+    setvar("pa_release",      "Release");
+    setvar("pa_press_next",   "Press Next to continue ...");
+    setvar("pa_error",        "Error!");
+    setvar("pa_warning",      "Warning!");
+    setvar("pa_ok",           "OK");
+    setvar("pa_done",         "Done");
+    setvar("pa_plswait",      "Please wait...");
+
+    setvar("pa_wrong_device", "This kernel is only for Redmi Note 5 Pro (whyred) devices!");
+
+    setvar("pa_oc",           "Need CPU overclock?");
+    setvar("pa_oc_1",         "Note: Choose \"yes\" if you need best performance\n& don't care about CPU life and battery life.\n\nBeware of device explosion!");
+    setvar("pa_oc_s1",        "Yes (big: 2208 MHz, LITTLE: 1843 MHz)");
+    setvar("pa_oc_s2",        "No (Stock, recommend)");
+
+    setvar("pa_uv",           "Select CPU & GPU UV");
+    setvar("pa_uv_1",         "Note: Reduce the voltage can save battery,\nbut may also cause the device instability!\nSelect \"No UV\" if you are not sure.");
+    setvar("pa_uv_s1",        "No UV (default)");
+    setvar("pa_uv_s2",        "80 mV (Danger!)");
+
+    setvar("pa_cam",          "Select camera blobs");
+    setvar("pa_cam_1",        "Note: If the camera not working after flashing,\nplease reflash this kernel & select other option here.");
+    setvar("pa_cam_s1",       "NEW camera blobs");
+    setvar("pa_cam_s2",       "OLD camera blobs");
+    setvar("pa_cam_s3",       "Auto detection (Maybe inaccurate)");
+
+    setvar("pa_hbm",          "Select wired headphone buttons mode");
+    setvar("pa_hbm_1",        "Note: The default is \"Stock mode\".\n\nIf the wired headphone volume buttons not working\nor response abnormal after flashing, please reflash\nthis kernel & select \"Alternative mode\" here.");
+    setvar("pa_hbm_s1",       "Stock mode");
+    setvar("pa_hbm_s2",       "Alternative mode");
+
+    setvar("pa_em",           "Select EAS energy model");
+    setvar("pa_em_1",         "Note: The default is \"CAF\" energy model.\nKeep default if you don't know about the energy model.");
+    setvar("pa_em_s1",        "CAF (From Qualcomm official, designed for sdm660)");
+    setvar("pa_em_s2",        "Kdrag0n (Calculated for sdm660)");
+    setvar("pa_em_s3",        "Kdrag0n (Calculated for sdm636)");
+    setvar("pa_em_s3_sub",    "Note: Not available if you enabled overclock");
+    setvar("pa_em_s4",        "Hypeartist (Calculated by hypeartist)");
+    setvar("pa_em_s_na",      "This energy model is not available,\nplease select another.");
+
+    setvar("pa_ef",           "Do you want to try efficient CPU frequencies?");
+    setvar("pa_ef_1",         "Note: The efficient frequencies scheme abandons those\nlower CPU frequency gears. This will not make your\ndevice more power saving, but you can get best\nperformance and fluency when screen on.");
+    setvar("pa_ef_s1",        "Yes, I want to try");
+    setvar("pa_ef_s2",        "No, I don't (default)");
+
+    setvar("pa_ready",        "Ready to install");
+    setvar("pa_ready_1",      "Please confirm");
+    setvar("pa_ready_s1",     "Install ");
+    setvar("pa_ready_s2",     "Abort installation");
+    setvar("pa_wipe_cache_t", "Wipe dalvik-cache & cache");
+    setvar("pa_wipe_cache_w", "Do not do this if you don't know\nwhat are you doing!\n\nContinue?");
+    setvar("pa_wipe_cache_d", "Note: The next boot may take 1~10 minutes,\nbecause system needs to rebuild dalvik-cache.\nPlease wait patiently.");
+
+    setvar("pa_installing",   "Installing");
+    setvar("pa_installing_1", "Installing Panda Kernel\nPlease wait");
+    setvar("pa_ins_finish",   "Installation Completed");
+    setvar("pa_ins_finish_1", "Congratulations!");
+    setvar("pa_ins_finish_2", "has been installed into your device.");
+    setvar("pa_reboot",       "Reboot your device now");
+    setvar("pa_ins_failed",   "Installation Failed");
+    setvar("pa_exit_code",    "Installer Status: ");
+    setvar("pa_finish",       "Finish");
+    setvar("pa_text_yes",     "Take the risk");
+    setvar("pa_text_yes_s",   "Yes");
+    setvar("pa_text_no",      "Give up");
+    setvar("pa_text_no_s",    "No");
+endif;
+
+if prop("lang.prop", "selected") == "2" then
+    loadlang("langs/cn.lang");
+    setvar("pa_version",      "版本");
+    setvar("pa_author",       "作者");
+    setvar("pa_release",      "发布");
+    setvar("pa_press_next",   "点击下一步继续...");
+    setvar("pa_error",        "错误!");
+    setvar("pa_warning",      "警告");
+    setvar("pa_ok",           "好的");
+    setvar("pa_done",         "完成");
+    setvar("pa_plswait",      "请稍侯...");
+
+    setvar("pa_wrong_device", "该内核仅适用于红米 Note 5 (whyred) 设备!");
+
+    setvar("pa_oc",           "你需要 CPU 超频吗?");
+    setvar("pa_oc_1",         "注意: 如果需要最佳性能并且\n不在乎 CPU 寿命和电池续航的话, 可以考虑选择\"是\".\n\n当心设备爆炸!");
+    setvar("pa_oc_s1",        "是 (大核: 2208 MHz, 小核: 1843 MHz)");
+    setvar("pa_oc_s2",        "否 (默认频率, 推荐)");
+
+    setvar("pa_uv",           "选择 CPU & GPU 降压方案");
+    setvar("pa_uv_1",         "注意: 适当降压可以省电, 但是也可能会导致设备不稳定!\n如果你不确定, 请选择 \"不降压\".");
+    setvar("pa_uv_s1",        "不降压 (默认)");
+    setvar("pa_uv_s2",        "80 mV (危险!)");
+
+    setvar("pa_cam",          "选择相机 blobs 版本");
+    setvar("pa_cam_1",        "注意: 如果刷入内核之后相机出现问题,\n请重刷本内核并在此选择其他选项.");
+    setvar("pa_cam_s1",       "新版本");
+    setvar("pa_cam_s2",       "旧版本");
+    setvar("pa_cam_s3",       "自动检测 (可能不准确)");
+
+    setvar("pa_hbm",          "选择耳机按键模式");
+    setvar("pa_hbm_1",        "注意: 默认为普通模式,\n如果刷入内核后有线耳机音量按键失灵或异常,\n请重刷本内核并在此选择\"特殊模式\".");
+    setvar("pa_hbm_s1",       "普通模式");
+    setvar("pa_hbm_s2",       "特殊模式");
+
+    setvar("pa_em",           "选择 EAS 调度能量模型");
+    setvar("pa_em_1",         "注意: 默认为\"CAF\"的能量模型,\n如果你不了解能量模型, 请保持默认.");
+    setvar("pa_em_s1",        "CAF (来自高通官方为 sdm660 设计的能量模型)");
+    setvar("pa_em_s2",        "Kdrag0n (由 kdrag0n 为 sdm660 计算的能量模型)");
+    setvar("pa_em_s3",        "Kdrag0n (由 kdrag0n 为 sdm636 计算的能量模型)");
+    setvar("pa_em_s3_sub",    "注意: 若选择超频, 则该能量模型不可用");
+    setvar("pa_em_s4",        "Hypeartist (由 hypeartist 计算的能量模型)");
+    setvar("pa_em_s_na",      "该能量模型不可用, 请选择其他选项.");
+
+    setvar("pa_ef",           "你想试试高频方案吗?");
+    setvar("pa_ef_1",         "注意: 高频方案抛弃了那些较低的 CPU 频率挡位.\n这样并不能使你的设备更加省电,\n但是在亮屏时能够得到最佳的性能和流畅度.");
+    setvar("pa_ef_s1",        "我想试试");
+    setvar("pa_ef_s2",        "我不想 (默认)");
+
+    setvar("pa_ready",        "即将开始安装");
+    setvar("pa_ready_1",      "请确认");
+    setvar("pa_ready_s1",     "确认安装 ");
+    setvar("pa_ready_s2",     "终止安装程序");
+    setvar("pa_wipe_cache_t", "清除 dalvik-cache & cache");
+    setvar("pa_wipe_cache_w", "如果你不知道自己在做什么, 请不要这样做!\n\n确定要继续吗?");
+    setvar("pa_wipe_cache_d", "注意: 下次开机可能会花费 1~10 分钟,\n因为系统需要重建 dalvik-cache.\n请耐心等待.");
+
+    setvar("pa_installing",   "正在安装");
+    setvar("pa_installing_1", "正在安装 Panda 内核\n请稍候");
+    setvar("pa_ins_finish",   "安装完成");
+    setvar("pa_ins_finish_1", "完成!");
+    setvar("pa_ins_finish_2", "已成功安装.");
+    setvar("pa_reboot",       "现在重启?");
+    setvar("pa_ins_failed",   "安装失败");
+    setvar("pa_exit_code",    "安装状态：");
+    setvar("pa_finish",       "完成");
+    setvar("pa_text_yes",     "我愿意承担风险");
+    setvar("pa_text_yes_s",   "同意");
+    setvar("pa_text_no",      "还是算了吧");
+    setvar("pa_text_no_s",    "放弃");
+endif;
+
+viewbox(
+    "\n<@center>" + ini_get("rom_name") + "</@>",
+    "<@center><b>\n" + ini_get("rom_device") + "</b>\n\n</@>" +
+    "\n\n\n\n  " + getvar("pa_version") + " \t: <b><#selectbg_g>" + ini_get("rom_version") + "</#></b>\n" +
+    "  " + getvar("pa_author") + " \t: <b><#selectbg_g>" + ini_get("rom_author") + "</#></b>\n" +
+    "  " + getvar("pa_release") + " \t: <b><#selectbg_g>" + ini_get("rom_date") + "</#></b>\n\n\n" +
+    getvar("pa_press_next"),
+    ""
+);
+
+if resexec("is_whyred.sh") != "0" then
+    alert(
+        getvar("pa_error"),
+        getvar("pa_wrong_device"),
+        "@trash",
+        getvar("pa_ok")
+    );
+    exit("");
+endif;
+
+selectbox(
+    "\n\n<@center>" + getvar("pa_oc") + "</@>",
+    "<@center><b>\n\n\n\n\n\n\n\n" + getvar("pa_oc_1") + "\n</b></@>",
+    "",
+    "is_oc.prop",
+    getvar("pa_oc_s1"), "", 0,
+    getvar("pa_oc_s2"), "", 1
+);
+
+selectbox(
+    "\n\n<@center>" + getvar("pa_uv") + "</@>",
+    "<@center><b>\n\n\n\n\n\n\n\n" + getvar("pa_uv_1") + "\n</b></@>",
+    "",
+    "uv_level.prop",
+    getvar("pa_uv_s1"), "", 1,
+    getvar("pa_uv_s2"), "", 0
+);
+
+selectbox(
+    "\n\n<@center>" + getvar("pa_cam") + "</@>",
+    "<@center><b>\n\n\n\n\n\n\n\n" + getvar("pa_cam_1") + "\n</b></@>",
+    "",
+    "is_fixcam.prop",
+    getvar("pa_cam_s1"), "", 0,
+    getvar("pa_cam_s2"), "", 0,
+    getvar("pa_cam_s3"), "", 1
+);
+
+selectbox(
+    "\n\n<@center>" + getvar("pa_hbm") + "</@>",
+    "<@center><b>\n\n\n\n\n\n\n\n" + getvar("pa_hbm_1") + "\n</b></@>",
+    "",
+    "headphone_buttons_mode.prop",
+    getvar("pa_hbm_s1"), "", 1,
+    getvar("pa_hbm_s2"), "", 0
+);
+
+selectbox(
+    "\n\n<@center>" + getvar("pa_em") + "</@>",
+    "<@center><b>\n\n\n\n\n\n\n\n" + getvar("pa_em_1") + "\n</b></@>",
+    "",
+    "energy_model.prop",
+    getvar("pa_em_s1"), "", 1,
+    getvar("pa_em_s2"), "", 0,
+    getvar("pa_em_s3"), getvar("pa_em_s3_sub"), 0,
+    getvar("pa_em_s4"), "", 0
+);
+
+if prop("is_oc.prop", "selected.0") == "1" && prop("energy_model.prop", "selected.0") == 3 then
+    alert(
+        getvar("pa_error"),
+        getvar("pa_em_s_na"),
+        "@trash",
+        getvar("pa_ok")
+    );
+    back(1);
+endif;
+
+selectbox(
+    "\n\n<@center>" + getvar("pa_ef") + "</@>",
+    "<@center><b>\n\n\n\n\n\n\n\n" + getvar("pa_ef_1") + "\n</b></@>",
+    "",
+    "efficient_frequencies.prop",
+    getvar("pa_ef_s1"), "", 0,
+    getvar("pa_ef_s2"), "", 1
+);
+
+menubox(
+    "\n\n<@center>" + getvar("pa_ready") + "</@>",
+    "<@center><b>\n\n\n\n\n\n\n\n" + getvar("pa_ready_1") + "\n</b></@>",
+    "",
+    "menu.prop",
+    getvar("pa_ready_s1") + ini_get("rom_name") + " " + ini_get("rom_version"), "", "@install",
+    getvar("pa_ready_s2"), "", "@trash",
+    getvar("pa_wipe_cache_t"), "", "@action",
+    " ", "", ""
+);
+
+prop("menu.prop", "selected") == "2" && exit("");
+
+if prop("menu.prop", "selected") == "3" then
+    if confirm(
+        getvar("pa_warning"),
+        getvar("pa_wipe_cache_w"),
+        "@warning") == "yes"
+    then
+        pleasewait(getvar("pa_plswait"));
+        resexec("wipe_dalvik_cache.sh");
+        alert(
+            getvar("pa_done"),
+            getvar("pa_wipe_cache_d"),
+            "@done",
+            getvar("pa_ok")
+        );
+    endif;
+    back("1");
+endif;
+
+if prop("menu.prop", "selected") == "4" then
+    if readtmpfile("darkness") == "4" then
+        writetmpfile("darkness", "0");
+        textbox(
+            "Meanwhile...",
+            "Abandoned in the void of nothingness",
+            "",
+            resread("Darkness.txt")
+        );
+        back("2");
+    else
+        writetmpfile("darkness", cal(readtmpfile("darkness") || "0", "+", "1"));
+    endif;
+    back("1");
+endif;
+
+setvar("retstatus", install(
+    "<@center>\n" + getvar("pa_installing") + "</@>",
+    "<@center>\n" + getvar("pa_installing_1") + "</@>",
+    "")
+);
+
+ini_set("text_next", getvar("pa_finish"));
+
+if getvar("retstatus") == "0" then
+    checkviewbox(
+        getvar("pa_ins_finish"),
+        "<#selectbg_g><b>" + getvar("pa_ins_finish_1") + "</b></#>\n\n" +
+        "<b>" + ini_get("rom_name") + "</b> " + getvar("pa_ins_finish_2") + "\n\n" +
+        getvar("pa_exit_code") + getvar("retstatus") + "\n\n",
+        "@welcome",
+        getvar("pa_reboot"),
+        "0",
+        "reboot_it"
+    );
+else
+    viewbox(
+        getvar("pa_ins_failed"),
+        "\n" + getvar("pa_exit_code") + getvar("retstatus"),
+        "@warning"
+    );
+endif;
+
+getvar("reboot_it") == "1" && reboot("onfinish");

@@ -1,0 +1,15 @@
+Source: https://github.com/Ratoriku/android_kernel_xiaomi_lavender/commit/33b12267fbd0b4e7717cb69c03f23b21f4db86ea
+By Ratoriku <a1063021545@gmail.com>
+--- 
++++ 
+@@ -4592,8 +4592,8 @@
+ 			clock-names = "cpu0_clk\0cpu4_clk";
+ 			clocks = <0xab 0x01 0xab 0x02>;
+ 			qcom,governor-per-policy;
+-			qcom,cpufreq-table-0 = <0x9ab00 0xdc500 0x10fe00 0x156300 0x177000 0x189c00 0x1aa900 0x1c2000>;
+-			qcom,cpufreq-table-4 = <0x10fe00 0x156300 0x1aa900 0x1b8a00 0x1de200 0x20d000 0x21b100 0x258000>;
++			qcom,cpufreq-table-0 = <0x177000 0x189c00 0x1aa900 0x1c2000>;
++			qcom,cpufreq-table-4 = <0x1aa900 0x1b8a00 0x1de200 0x20d000 0x21b100 0x258000>;
+ 		};
+ 
+ 		sdhci@c0c4000 {
