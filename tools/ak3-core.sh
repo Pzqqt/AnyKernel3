@@ -126,7 +126,7 @@ split_boot() {
   elif [ -f "$bin/rkcrc" ]; then
     dd bs=4096 skip=8 iflag=skip_bytes conv=notrunc if=$bootimg of=ramdisk.cpio.gz;
   else
-    $bin/magiskboot unpack -n -h $bootimg;
+    $bin/magiskboot unpack -n -h $bootimg 2>&1 | tee magiskboot_unpack.log;
     case $? in
       1) dumpfail=1;;
       2) touch chromeos;;
@@ -237,7 +237,7 @@ repack_ramdisk() {
 
 # flash_boot (build, sign and write image only)
 flash_boot() {
-  local varlist i kernel ramdisk fdt cmdline comp part0 part1 nocompflag signfail pk8 cert avbtype;
+  local varlist i kernel ramdisk fdt cmdline comp part0 part1 nocompflag signfail pk8 cert avbtype header_ver;
 
   cd $split_img;
   if [ -f "$bin/mkimage" ]; then
@@ -309,9 +309,22 @@ flash_boot() {
     [ "$kernel" ] && cp -f $kernel kernel;
     [ "$ramdisk" ] && cp -f $ramdisk ramdisk.cpio;
     [ "$dt" -a -f extra ] && cp -f $dt extra;
-    for i in dtb recovery_dtbo; do
-      [ "$(eval echo \$$i)" -a -f $i ] && cp -f $(eval echo \$$i) $i;
-    done;
+    [ "$recovery_dtbo" -a -f $recovery_dtbo ] && cp -f $recovery_dtbo recovery_dtbo;
+    if [ "$dtb" -a -f $dtb ]; then
+      case "$kernel" in
+        *Image*-dtb) :;;  # do nothing
+        *) {
+          header_ver=$(cat magiskboot_unpack.log | grep 'HEADER_VER' | sed -n 's;.*\[\(.*\)\];\1;p');
+          [ "$header_ver" -eq 2 ] && rm -f kernel_dtb;
+          if [ -f kernel_dtb ]; then
+            rm -f dtb;
+            cp -f $dtb kernel_dtb;
+          else
+            cp -f $dtb dtb;
+          fi
+        };;
+      esac;
+    fi
     case $kernel in
       *Image*)
         if [ ! "$magisk_patched" ]; then
