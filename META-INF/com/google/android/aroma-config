@@ -6,8 +6,8 @@ ini_set("rom_date",             "@BUILD_DATE@");
 
 ini_set("force_colorspace", "rgba");
 
-fontresload("0", "ttf/Roboto-Regular.ttf", "12");
-fontresload("1", "ttf/Roboto-Regular.ttf", "16"); 
+fontresload("0", "ttf/MF-YueHei-Regular.ttf", "12");
+fontresload("1", "ttf/MF-YueHei-Regular.ttf", "16"); 
 
 theme("default");
 
@@ -32,7 +32,7 @@ menubox(
 if prop("lang.prop", "selected") == "1" then
     loadlang("langs/en.lang");
     setvar("pa_version",      "Version");
-    setvar("pa_author",       "Author\t");
+    setvar("pa_author",       "Author");
     setvar("pa_release",      "Release");
     setvar("pa_press_next",   "Press Next to continue ...");
     setvar("pa_error",        "Error!");
