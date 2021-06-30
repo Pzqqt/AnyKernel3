@@ -156,7 +156,7 @@ export magisk_patched=$?
 if [ $((magisk_patched & 3)) -eq 1 ]; then
     ui_print "- Magisk detected! Patching Image file again..."
     ${bin}/magiskboot hexpatch ${home}/Image 736B69705F696E697472616D667300 77616E745F696E697472616D667300
-    if [ "$(file_getprop ${home}/anykernel.sh do.systemless)" == 1 ]; then
+    if [ "$(file_getprop ${home}/anykernel.sh do.modules)$(file_getprop ${home}/anykernel.sh do.systemless)" == "11" ]; then
         strings ${home}/Image | grep -E 'Linux version.*#' > ${home}/vertmp
     fi
 fi
