@@ -6,8 +6,8 @@ ini_set("rom_date",             "@BUILD_DATE@");
 
 ini_set("force_colorspace", "rgba");
 
-fontresload("0", "ttf/MF-YueHei-Regular.ttf", "12");
-fontresload("1", "ttf/MF-YueHei-Regular.ttf", "16"); 
+fontresload("0", "ttf/LxgwMarkerGothic-Regular.ttf", "12");
+fontresload("1", "ttf/LxgwMarkerGothic-Regular.ttf", "16"); 
 
 theme("default");
 
@@ -32,7 +32,7 @@ menubox(
 if prop("lang.prop", "selected") == "1" then
     loadlang("langs/en.lang");
     setvar("pa_version",      "Version");
-    setvar("pa_author",       "Author");
+    setvar("pa_author",       "Author\t");
     setvar("pa_release",      "Release");
     setvar("pa_press_next",   "Press Next to continue ...");
     setvar("pa_error",        "Error!");
@@ -60,21 +60,21 @@ if prop("lang.prop", "selected") == "1" then
     setvar("pa_cam_s3",       "Auto detection (Maybe inaccurate)");
 
     setvar("pa_hbm",          "Select wired headphone buttons mode");
-    setvar("pa_hbm_1",        "Note: The default is \"Stock mode\".\n\nIf the wired headphone volume buttons not working\nor response abnormal after flashing, please reflash\nthis kernel & select \"Alternative mode\" here.");
+    setvar("pa_hbm_1",        "Note: The default is \"Stock mode\".\n\nIf the wired headphone volume buttons not working or response abnormal after flashing, please reflash this kernel & select \"Alternative mode\" here.");
     setvar("pa_hbm_s1",       "Stock mode");
     setvar("pa_hbm_s2",       "Alternative mode");
 
     setvar("pa_em",           "Select EAS energy model");
-    setvar("pa_em_1",         "Note: The default is \"CAF\" energy model.\nKeep default if you don't know about the energy model.");
-    setvar("pa_em_s1",        "CAF (From Qualcomm official, designed for sdm660)");
+    setvar("pa_em_1",         "Note: The default is \"CAF\" energy model.\nKeep default if you don't know about energy model.");
+    setvar("pa_em_s1",        "CAF (From Qualcomm, designed for sdm660)");
     setvar("pa_em_s2",        "Kdrag0n (Calculated for sdm660)");
     setvar("pa_em_s3",        "Kdrag0n (Calculated for sdm636)");
     setvar("pa_em_s3_sub",    "Note: Not available if you enabled overclock");
     setvar("pa_em_s4",        "Hypeartist (Calculated by hypeartist)");
     setvar("pa_em_s_na",      "This energy model is not available,\nplease select another.");
 
-    setvar("pa_ef",           "Do you want to try efficient CPU frequencies?");
-    setvar("pa_ef_1",         "Note: The efficient frequencies scheme abandons those\nlower CPU frequency gears. This will not make your\ndevice more power saving, but you can get best\nperformance and fluency when screen on.");
+    setvar("pa_ef",           "Want to try efficient CPU frequencies?");
+    setvar("pa_ef_1",         "Note: The efficient frequencies scheme abandons those lower CPU frequency gears. This will not make your device more power saving, but you can get best performance and fluency when screen on.");
     setvar("pa_ef_s1",        "Yes, I want to try");
     setvar("pa_ef_s2",        "No, I don't (default)");
 
