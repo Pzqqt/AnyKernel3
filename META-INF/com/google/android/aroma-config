@@ -6,8 +6,8 @@ ini_set("rom_date",             "@BUILD_DATE@");
 
 ini_set("force_colorspace", "rgba");
 
-fontresload("0", "ttf/MF-YueHei-Regular.ttf", "12");
-fontresload("1", "ttf/MF-YueHei-Regular.ttf", "16"); 
+fontresload("0", "ttf/LxgwMarkerGothic-Regular.ttf", "12");
+fontresload("1", "ttf/LxgwMarkerGothic-Regular.ttf", "16"); 
 
 theme("default");
 
@@ -32,7 +32,7 @@ menubox(
 if prop("lang.prop", "selected") == "1" then
     loadlang("langs/en.lang");
     setvar("pa_version",      "Version");
-    setvar("pa_author",       "Author");
+    setvar("pa_author",       "Author\t");
     setvar("pa_release",      "Release");
     setvar("pa_press_next",   "Press Next to continue ...");
     setvar("pa_error",        "Error!");
@@ -60,12 +60,12 @@ if prop("lang.prop", "selected") == "1" then
     setvar("pa_cam_s3",       "Auto detection (Maybe inaccurate)");
 
     setvar("pa_hbm",          "Select wired headphone buttons mode");
-    setvar("pa_hbm_1",        "Note: The default is \"Stock mode\".\n\nIf the wired headphone volume buttons not working\nor response abnormal after flashing, please reflash\nthis kernel & select \"Alternative mode\" here.");
+    setvar("pa_hbm_1",        "Note: The default is \"Stock mode\".\n\nIf the wired headphone volume buttons not working or response abnormal after flashing, please reflash this kernel & select \"Alternative mode\" here.");
     setvar("pa_hbm_s1",       "Stock mode");
     setvar("pa_hbm_s2",       "Alternative mode");
 
     setvar("pa_spectrum",     "Need Spectrum?");
-    setvar("pa_spectrum_1",   "Note: If you choose \"Yes\",\nwill install a Magisk module for your device.\nThis module will be auto removed after change kernel.");
+    setvar("pa_spectrum_1",   "Note: If you choose \"Yes\", will install a Magisk module for your device. This module will be auto removed after change kernel.");
     setvar("pa_wipev2",       "Governor profile from Project WIPE v2\nGithub: https://github.com/yc9559/wipe-v2\nAuthor: yc9559");
     setvar("pa_spectrum_s1",  "Yes (install Spectrum app yourself)");
     setvar("pa_spectrum_s2",  "No");
