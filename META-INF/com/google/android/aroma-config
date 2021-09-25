@@ -6,8 +6,8 @@ ini_set("rom_date",             "@BUILD_DATE@");
 
 ini_set("force_colorspace", "rgba");
 
-fontresload("0", "ttf/LxgwMarkerGothic-Regular.ttf", "12");
-fontresload("1", "ttf/LxgwMarkerGothic-Regular.ttf", "16"); 
+fontresload("0", "ttf/VonwaonBitmap-16pxLite.ttf", "12");
+fontresload("1", "ttf/VonwaonBitmap-16pxLite.ttf", "16"); 
 
 theme("default");
 
@@ -22,7 +22,7 @@ cmp(getvar("random_num"), ">=", "8") && splash(2000, "splash_3");
 
 menubox(
     "\n<@center>Select Language</@>",
-    "<@center><b>\n选择安装器语言\n\n\n\n</b></@>",
+    "<@center>\n选择安装器语言\n\n\n\n</@>",
     "",
     "lang.prop",
     "English", "", "",
@@ -175,10 +175,10 @@ endif;
 
 viewbox(
     "\n<@center>" + ini_get("rom_name") + "</@>",
-    "<@center><b>\n" + ini_get("rom_device") + "</b>\n\n</@>" +
-    "\n\n\n\n  " + getvar("pa_version") + " \t: <b><#selectbg_g>" + ini_get("rom_version") + "</#></b>\n" +
-    "  " + getvar("pa_author") + " \t: <b><#selectbg_g>" + ini_get("rom_author") + "</#></b>\n" +
-    "  " + getvar("pa_release") + " \t: <b><#selectbg_g>" + ini_get("rom_date") + "</#></b>\n\n\n" +
+    "<@center>\n" + ini_get("rom_device") + "\n\n</@>" +
+    "\n\n\n\n  " + getvar("pa_version") + " \t: <#selectbg_g>" + ini_get("rom_version") + "</#>\n" +
+    "  " + getvar("pa_author") + " \t: <#selectbg_g>" + ini_get("rom_author") + "</#>\n" +
+    "  " + getvar("pa_release") + " \t: <#selectbg_g>" + ini_get("rom_date") + "</#>\n\n\n" +
     getvar("pa_press_next"),
     ""
 );
@@ -195,7 +195,7 @@ endif;
 
 selectbox(
     "\n\n<@center>" + getvar("pa_oc") + "</@>",
-    "<@center><b>\n\n\n\n\n\n\n\n" + getvar("pa_oc_1") + "\n</b></@>",
+    "<@center>\n\n\n\n\n\n\n\n" + getvar("pa_oc_1") + "\n</@>",
     "",
     "is_oc.prop",
     getvar("pa_oc_s1"), "", 0,
@@ -204,7 +204,7 @@ selectbox(
 
 selectbox(
     "\n\n<@center>" + getvar("pa_uv") + "</@>",
-    "<@center><b>\n\n\n\n\n\n\n\n" + getvar("pa_uv_1") + "\n</b></@>",
+    "<@center>\n\n\n\n\n\n\n\n" + getvar("pa_uv_1") + "\n</@>",
     "",
     "uv_level.prop",
     getvar("pa_uv_s1"), "", 1,
@@ -213,7 +213,7 @@ selectbox(
 
 selectbox(
     "\n\n<@center>" + getvar("pa_cam") + "</@>",
-    "<@center><b>\n\n\n\n\n\n\n\n" + getvar("pa_cam_1") + "\n</b></@>",
+    "<@center>\n\n\n\n\n\n\n\n" + getvar("pa_cam_1") + "\n</@>",
     "",
     "is_fixcam.prop",
     getvar("pa_cam_s1"), "", 0,
@@ -223,7 +223,7 @@ selectbox(
 
 selectbox(
     "\n\n<@center>" + getvar("pa_hbm") + "</@>",
-    "<@center><b>\n\n\n\n\n\n\n\n" + getvar("pa_hbm_1") + "\n</b></@>",
+    "<@center>\n\n\n\n\n\n\n\n" + getvar("pa_hbm_1") + "\n</@>",
     "",
     "headphone_buttons_mode.prop",
     getvar("pa_hbm_s1"), "", 1,
@@ -232,7 +232,7 @@ selectbox(
 
 selectbox(
     "\n\n<@center>" + getvar("pa_em") + "</@>",
-    "<@center><b>\n\n\n\n\n\n\n\n" + getvar("pa_em_1") + "\n</b></@>",
+    "<@center>\n\n\n\n\n\n\n\n" + getvar("pa_em_1") + "\n</@>",
     "",
     "energy_model.prop",
     getvar("pa_em_s1"), "", 1,
@@ -253,7 +253,7 @@ endif;
 
 selectbox(
     "\n\n<@center>" + getvar("pa_ef") + "</@>",
-    "<@center><b>\n\n\n\n\n\n\n\n" + getvar("pa_ef_1") + "\n</b></@>",
+    "<@center>\n\n\n\n\n\n\n\n" + getvar("pa_ef_1") + "\n</@>",
     "",
     "efficient_frequencies.prop",
     getvar("pa_ef_s1"), "", 0,
@@ -262,7 +262,7 @@ selectbox(
 
 menubox(
     "\n\n<@center>" + getvar("pa_ready") + "</@>",
-    "<@center><b>\n\n\n\n\n\n\n\n" + getvar("pa_ready_1") + "\n</b></@>",
+    "<@center>\n\n\n\n\n\n\n\n" + getvar("pa_ready_1") + "\n</@>",
     "",
     "menu.prop",
     getvar("pa_ready_s1") + ini_get("rom_name") + " " + ini_get("rom_version"), "", "@install",
@@ -318,8 +318,8 @@ ini_set("text_next", getvar("pa_finish"));
 if getvar("retstatus") == "0" then
     checkviewbox(
         getvar("pa_ins_finish"),
-        "<#selectbg_g><b>" + getvar("pa_ins_finish_1") + "</b></#>\n\n" +
-        "<b>" + ini_get("rom_name") + "</b> " + getvar("pa_ins_finish_2") + "\n\n" +
+        "<#selectbg_g>" + getvar("pa_ins_finish_1") + "</#>\n\n" +
+        "" + ini_get("rom_name") + " " + getvar("pa_ins_finish_2") + "\n\n" +
         getvar("pa_exit_code") + getvar("retstatus") + "\n\n",
         "@welcome",
         getvar("pa_reboot"),
