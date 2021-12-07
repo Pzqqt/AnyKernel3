@@ -73,6 +73,11 @@ if prop("lang.prop", "selected") == "1" then
     setvar("pa_em_s4",        "Hypeartist (Calculated by hypeartist)");
     setvar("pa_em_s_na",      "This energy model is not available,\nplease select another.");
 
+    setvar("pa_qh",           "Select haptic driver version");
+    setvar("pa_qh_1",         "Note: The default is \"QPNP Haptic\".\n\nIf the vibration not working after flashing,\nplease reflash this kernel & select another option here.");
+    setvar("pa_qh_s1",        "QPNP Haptic (For most roms)");
+    setvar("pa_qh_s2",        "QTI Haptics (For a few roms with requirements)");
+
     setvar("pa_ef",           "Want to try efficient CPU frequencies?");
     setvar("pa_ef_1",         "Note: The efficient frequencies scheme abandons those lower CPU frequency gears. This will not make your device more power saving, but you can get best performance and fluency when screen on.");
     setvar("pa_ef_s1",        "Yes, I want to try");
@@ -144,6 +149,11 @@ if prop("lang.prop", "selected") == "2" then
     setvar("pa_em_s3_sub",    "注意: 若选择超频, 则该能量模型不可用");
     setvar("pa_em_s4",        "Hypeartist (由 hypeartist 计算的能量模型)");
     setvar("pa_em_s_na",      "该能量模型不可用, 请选择其他选项.");
+
+    setvar("pa_qh",           "选择 haptic 驱动版本");
+    setvar("pa_qh_1",         "注意: 默认为\"QPNP Haptic\".\n\n如果刷入内核之后震动出现问题,\n请重刷本内核并在此选择另一个选项.");
+    setvar("pa_qh_s1",        "QPNP Haptic (适用于绝大多数 rom)");
+    setvar("pa_qh_s2",        "QTI Haptics (适用于个别有要求的 rom)");
 
     setvar("pa_ef",           "你想试试高频方案吗?");
     setvar("pa_ef_1",         "注意: 高频方案抛弃了那些较低的 CPU 频率挡位.\n这样并不能使你的设备更加省电,\n但是在亮屏时能够得到最佳的性能和流畅度.");
@@ -250,6 +260,15 @@ if prop("is_oc.prop", "selected.0") == "1" && prop("energy_model.prop", "selecte
     );
     back(1);
 endif;
+
+selectbox(
+    "\n\n<@center>" + getvar("pa_qh") + "</@>",
+    "<@center>\n\n\n\n\n\n\n\n" + getvar("pa_qh_1") + "\n</@>",
+    "",
+    "qti_haptics.prop",
+    getvar("pa_qh_s1"), "", 1,
+    getvar("pa_qh_s2"), "", 0
+);
 
 selectbox(
     "\n\n<@center>" + getvar("pa_ef") + "</@>",

@@ -1,0 +1,89 @@
+Source: https://source.codeaurora.org/quic/la/kernel/msm-4.14/tree/arch/arm64/boot/dts/qcom/pm660.dtsi?h=LA.UM.8.2.1.r1-06500-sdm660.0
+--- 
++++ 
+@@ -2806,27 +2806,68 @@
+ 				#size-cells = <0x00>;
+ 
+ 				qcom,haptic@c000 {
+-					compatible = "qcom,qpnp-haptic";
++					compatible = "qcom,pm660-haptics";
+ 					reg = <0xc000 0x100>;
+ 					interrupts = <0x01 0xc0 0x00 0x03 0x01 0xc0 0x01 0x03>;
+-					interrupt-names = "sc-irq\0play-irq";
+-					qcom,pmic-revid = <0x7c>;
+-					qcom,pmic-misc = <0x83>;
+-					qcom,misc-clk-trim-error-reg = <0xf3>;
++					interrupt-names = "hap-sc-irq\0hap-play-irq";
+ 					qcom,actuator-type = "erm";
+-					qcom,play-mode = "direct";
+ 					qcom,vmax-mv = <0xbb8>;
+-					qcom,ilim-ma = <0x320>;
+-					qcom,wave-shape = "square";
+-					qcom,wave-play-rate-us = <0x1a0b>;
+-					qcom,int-pwm-freq-khz = <0x1f9>;
+-					qcom,sc-deb-cycles = <0x08>;
+-					qcom,en-brake;
+-					qcom,brake-pattern = <0x3030000>;
+-					qcom,lra-high-z = "opt0";
+-					qcom,lra-auto-res-mode = "qwd";
+-					qcom,lra-calibrate-at-eop = <0x00>;
+-					qcom,correct-lra-drive-freq;
++					qcom,play-rate-us = <0x1a0b>;
++					qcom,lra-resonance-sig-shape = "sine";
++					qcom,lra-auto-resonance-mode = "qwd";
++					qcom,lra-allow-variable-play-rate;
++
++					wf_0 {
++						qcom,effect-id = <0x00>;
++						qcom,wf-vmax-mv = <0xe10>;
++						qcom,wf-pattern = [3e 3e 3e];
++						qcom,wf-play-rate-us = <0x1a0b>;
++						qcom,wf-brake-pattern = <0x1000000>;
++						qcom,lra-auto-resonance-disable;
++					};
++
++					wf_1 {
++						qcom,effect-id = <0x01>;
++						qcom,wf-vmax-mv = <0xe10>;
++						qcom,wf-pattern = <0x7e7e0202 0x2020202>;
++						qcom,wf-play-rate-us = <0x1be7>;
++						qcom,wf-repeat-count = <0x02>;
++						qcom,wf-s-repeat-count = <0x01>;
++						qcom,lra-auto-resonance-disable;
++					};
++
++					wf_2 {
++						qcom,effect-id = <0x02>;
++						qcom,wf-vmax-mv = <0xe10>;
++						qcom,wf-pattern = [7e 7e];
++						qcom,wf-play-rate-us = <0xfa0>;
++						qcom,lra-auto-resonance-disable;
++					};
++
++					wf_3 {
++						qcom,effect-id = <0x03>;
++						qcom,wf-vmax-mv = <0xe10>;
++						qcom,wf-pattern = [7e 7e 7e];
++						qcom,wf-play-rate-us = <0x1a0b>;
++						qcom,lra-auto-resonance-disable;
++					};
++
++					wf_4 {
++						qcom,effect-id = <0x04>;
++						qcom,wf-vmax-mv = <0xe10>;
++						qcom,wf-pattern = [7e 7e];
++						qcom,wf-play-rate-us = <0x1388>;
++						qcom,lra-auto-resonance-disable;
++					};
++
++					wf_5 {
++						qcom,effect-id = <0x05>;
++						qcom,wf-vmax-mv = <0xe10>;
++						qcom,wf-pattern = [7e 7e 7e];
++						qcom,wf-play-rate-us = <0x1a0b>;
++						qcom,wf-brake-pattern = <0x3000000>;
++						qcom,lra-auto-resonance-disable;
++					};
+ 				};
+ 			};
+ 

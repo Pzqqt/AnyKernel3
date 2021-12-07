@@ -70,6 +70,7 @@ uv_level=$(aroma_get_value uv_level)                             # No UV: 1; 80m
 is_fixcam=$(aroma_get_value is_fixcam)                           # New blobs: 1; Old blobs: 2; Auto detection: 3
 headphone_buttons_mode=$(aroma_get_value headphone_buttons_mode) # Stock: 1; Alternative: 2
 energy_model=$(aroma_get_value energy_model)                     # CAF: 1; Kdrag0n-660: 2, Kdrag0n-636: 3, Hypeartist: 4
+qti_haptics=$(aroma_get_value qti_haptics)                       # qpnp haptic: 1; qti haptics: 2
 efficient_frequencies=$(aroma_get_value efficient_frequencies)   # Enable: 1, Disable: 2
 
 # Remove Pure Spectrum module when installing EAS build
@@ -147,6 +148,9 @@ if [ "$energy_model" != "1" ]; then
         };;
         *) abort "! Unknown parameter: energy_model: \"$energy_model\"";;
     esac
+fi
+if [ "$qti_haptics" == "2" ]; then
+    dts_patch_files="$dts_patch_files ${home}/diff_patches/qti-haptics.diff"
 fi
 if [ "$efficient_frequencies" == "1" ]; then
     if [ "$is_oc" == "1" ]; then
