@@ -69,6 +69,7 @@ is_oc=$(aroma_get_value is_oc)                                   # OC: 1; Non-OC
 uv_level=$(aroma_get_value uv_level)                             # No UV: 1; 80mv: 2
 is_fixcam=$(aroma_get_value is_fixcam)                           # New blobs: 1; Old blobs: 2; Auto detection: 3
 headphone_buttons_mode=$(aroma_get_value headphone_buttons_mode) # Stock: 1; Alternative: 2
+qti_haptics=$(aroma_get_value qti_haptics)                       # qpnp haptic: 1; qti haptics: 2
 is_spectrum=$(aroma_get_value spectrum)                          # Yes: 1; No:2
 
 # Install Pure Spectrum module
@@ -132,6 +133,28 @@ ${bin}/magiskboot decompress ${home}/dtbs/dtbs.tar.xz - | tar -xvC ${home}/dtbs
 [ -f "$dtb_img" ] || abort "! Failed to extract dtbs!"
 ${bin}/magiskboot decompress ${home}/Image.xz ${home}/Image
 [ -f ${home}/Image ] || abort "! Failed to extract Image!"
+
+# Patch dtb file
+dts_patch_files=""
+if [ "$qti_haptics" == "2" ]; then
+    dts_patch_files="$dts_patch_files ${home}/diff_patches/qti-haptics.diff"
+fi
+if [ -n "$dts_patch_files" ]; then
+    ui_print "- Recompiling dtb image..."
+    dtb_img_splitted=`${bin}/dtp -i $dtb_img | awk '{print $NF}'` || abort "! Failed to split dtb file!"
+    # ${dtb_img}-0: sdm660-mtp.dtb
+    # ${dtb_img}-1: sdm636-mtp_e7s.dtb
+    # We don't need to pay attention to the first dtb file
+    dtb_img_splitted_1="${dtb_img}-1"
+    [ -f "$dtb_img_splitted_1" ] || abort "! Can not found $dtb_img_splitted_1!"
+    ${bin}/dtc -q -I dtb -O dts -o "${dtb_img_splitted_1}.dts" "$dtb_img_splitted_1" || abort "! Failed to decompile dtb file!"
+    for diff_file in $dts_patch_files; do
+        patch -i $diff_file "${dtb_img_splitted_1}.dts" || abort "! Failed to patch dts file!"
+    done
+    ${bin}/dtc -q -I dts -O dtb -o "$dtb_img_splitted_1" "${dtb_img_splitted_1}.dts" || abort "! Failed to recompile dtb file!"
+    cat $dtb_img_splitted > "$dtb_img"_patched
+    dtb_img="$dtb_img"_patched
+fi
 
 # Patch kernel Image
 case "${flag_2}${is_fixcam}" in

@@ -64,6 +64,11 @@ if prop("lang.prop", "selected") == "1" then
     setvar("pa_hbm_s1",       "Stock mode");
     setvar("pa_hbm_s2",       "Alternative mode");
 
+    setvar("pa_qh",           "Select haptic driver version");
+    setvar("pa_qh_1",         "Note: The default is \"QPNP Haptic\".\n\nIf the vibration not working after flashing,\nplease reflash this kernel & select another option here.");
+    setvar("pa_qh_s1",        "QPNP Haptic (For most roms)");
+    setvar("pa_qh_s2",        "QTI Haptics (For a few roms with requirements)");
+
     setvar("pa_spectrum",     "Need Spectrum?");
     setvar("pa_spectrum_1",   "Note: If you choose \"Yes\", will install a Magisk module for your device. This module will be auto removed after change kernel.");
     setvar("pa_wipev2",       "Governor profile from Project WIPE v2\nGithub: https://github.com/yc9559/wipe-v2\nAuthor: yc9559");
@@ -127,6 +132,11 @@ if prop("lang.prop", "selected") == "2" then
     setvar("pa_hbm_1",        "注意: 默认为普通模式,\n如果刷入内核后有线耳机音量按键失灵或异常,\n请重刷本内核并在此选择\"特殊模式\".");
     setvar("pa_hbm_s1",       "普通模式");
     setvar("pa_hbm_s2",       "特殊模式");
+
+    setvar("pa_qh",           "选择 haptic 驱动版本");
+    setvar("pa_qh_1",         "注意: 默认为\"QPNP Haptic\".\n\n如果刷入内核之后震动出现问题,\n请重刷本内核并在此选择另一个选项.");
+    setvar("pa_qh_s1",        "QPNP Haptic (适用于绝大多数 rom)");
+    setvar("pa_qh_s2",        "QTI Haptics (适用于个别有要求的 rom)");
 
     setvar("pa_spectrum",     "你需要 Spectrum 吗?");
     setvar("pa_spectrum_1",   "注意: 如果选择\"是\", 将会为你安装一个 Magisk 模块.\n该模块会在你更换内核后自动移除.");
@@ -212,6 +222,15 @@ selectbox(
     "headphone_buttons_mode.prop",
     getvar("pa_hbm_s1"), "", 1,
     getvar("pa_hbm_s2"), "", 0
+);
+
+selectbox(
+    "\n\n<@center>" + getvar("pa_qh") + "</@>",
+    "<@center>\n\n\n\n\n\n\n\n" + getvar("pa_qh_1") + "\n</@>",
+    "",
+    "qti_haptics.prop",
+    getvar("pa_qh_s1"), "", 1,
+    getvar("pa_qh_s2"), "", 0
 );
 
 setvar("is_installed_magisk", resexec("is_installed_magisk.sh"));
