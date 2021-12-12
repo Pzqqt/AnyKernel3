@@ -1,0 +1,5 @@
+# Source: https://github.com/Ratoriku/android_kernel_xiaomi_lavender/commit/33b12267fbd0b4e7717cb69c03f23b21f4db86ea
+# By Ratoriku <a1063021545@gmail.com>
+
+/soc/qcom,msm-cpufreq qcom,cpufreq-table-0 1536000 1747200 1843200 -tu
+/soc/qcom,msm-cpufreq qcom,cpufreq-table-4 1747200 1958400 2150400 2208000 -tu

@@ -1,0 +1,5 @@
+# Source: https://github.com/STRIX-Project/STRIX_kernel_xiaomi-sdm660/commit/356562e8694e59dc5a0aa79beabd684d58947cd5
+# By Fiqri Ardyansyah <fiqri15072019@gmail.com>
+
+/soc/qcom,msm-cpufreq qcom,cpufreq-table-0 1113600 1536000 1612800 -tu
+/soc/qcom,msm-cpufreq qcom,cpufreq-table-4 1113600 1401600 1804800 -tu

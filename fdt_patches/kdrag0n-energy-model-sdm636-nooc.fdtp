@@ -1,0 +1,7 @@
+# EAS energy model source: https://github.com/chips-project/kernel_asus_sdm660/commit/572b3c9494e8e38f09873646e031e16621dcd3fc
+# By Danny Lin <danny@kdrag0n.dev>
+
+/energy-costs/core-cost0 busy-cost-data 633600 4 902400 9 1113600 14 1401600 23 1536000 32 1612800 40 -tu
+/energy-costs/core-cost1 busy-cost-data 1113600 111 1401600 140 1747200 174 1804800 180 -tu
+/energy-costs/cluster-cost0 busy-cost-data 633600 3 902400 8 1113600 13 1401600 23 1536000 32 1612800 39 -tu
+/energy-costs/cluster-cost1 busy-cost-data 1113600 34 1401600 63 1747200 111 1804800 178 -tu

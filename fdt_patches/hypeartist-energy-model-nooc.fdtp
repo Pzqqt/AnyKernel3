@@ -1,0 +1,13 @@
+# EAS energy model source: https://github.com/SiddharthBharadwaj/android_kernel_xiaomi_jasmine_sprout/commit/a5ab1f9d7cb188ef3e20a50c79ee64342d1bb92d
+# By hypeartist <hypeartist@gmail.com>
+
+# Pzqqt: Add a missing special frequency of sdm636 (LITTLE: 1612800)(by linear interpolation).
+
+/energy-costs/core-cost0 busy-cost-data 633600 1091 902400 1579 1113600 2065 1401600 3034 1536000 3686 1612800 4073 -tu
+/energy-costs/core-cost0 idle-cost-data 4 4 0 0 -tu
+/energy-costs/core-cost1 busy-cost-data 1113600 4943 1401600 7789 1747200 13766 1804800 15181 -tu
+/energy-costs/core-cost1 idle-cost-data 6 6 0 0 -tu
+/energy-costs/cluster-cost0 busy-cost-data 633600 22 902400 27 1113600 32 1401600 40 1536000 45 1612800 48 -tu
+/energy-costs/cluster-cost0 idle-cost-data 41 41 41 0 -tu
+/energy-costs/cluster-cost1 busy-cost-data 1113600 54 1401600 74 1747200 116 1804800 125 -tu
+/energy-costs/cluster-cost1 idle-cost-data 50 50 50 0 -tu

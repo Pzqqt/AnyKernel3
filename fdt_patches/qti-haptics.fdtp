@@ -1,0 +1,63 @@
+# Source: https://source.codeaurora.org/quic/la/kernel/msm-4.14/tree/arch/arm64/boot/dts/qcom/pm660.dtsi?h=LA.UM.8.2.1.r1-06500-sdm660.0
+
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 compatible qcom,pm660-haptics -ts
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 interrupt-names hap-sc-irq hap-play-irq -ts
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,pmic-revid -d
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,pmic-misc -d
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,misc-clk-trim-error-reg -d
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,play-mode -d
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,ilim-ma -d
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,wave-shape -d
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,wave-play-rate-us -d
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,int-pwm-freq-khz -d
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,sc-deb-cycles -d
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,en-brake -d
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,brake-pattern -d
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,lra-high-z -d
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,lra-auto-res-mode -d
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,lra-calibrate-at-eop -d
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,correct-lra-drive-freq -d
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,play-rate-us 6667 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,lra-resonance-sig-shape sine -ts
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,lra-auto-resonance-mode qwd -ts
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000 qcom,lra-allow-variable-play-rate
+-c /soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_0
+-c /soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_1
+-c /soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_2
+-c /soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_3
+-c /soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_4
+-c /soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_5
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_0 qcom,effect-id 0 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_0 qcom,wf-vmax-mv 3600 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_0 qcom,wf-pattern 0x3e3e3e -tx
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_0 qcom,wf-play-rate-us 6667 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_0 qcom,wf-brake-pattern 0x01000000 -tx
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_0 qcom,lra-auto-resonance-disable
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_1 qcom,effect-id 1 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_1 qcom,wf-vmax-mv 3600 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_1 qcom,wf-pattern 0x7e7e0202 0x2020202 -tx
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_1 qcom,wf-play-rate-us 7134 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_1 qcom,wf-repeat-count 2 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_1 qcom,wf-s-repeat-count 1 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_1 qcom,lra-auto-resonance-disable
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_2 qcom,effect-id 2 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_2 qcom,wf-vmax-mv 3600 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_2 qcom,wf-pattern 0x7e7e -tx
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_2 qcom,wf-play-rate-us 4000 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_2 qcom,lra-auto-resonance-disable
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_3 qcom,effect-id 3 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_3 qcom,wf-vmax-mv 3600 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_3 qcom,wf-pattern 0x7e7e7e -tx
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_3 qcom,wf-play-rate-us 6667 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_3 qcom,lra-auto-resonance-disable
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_4 qcom,effect-id 4 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_4 qcom,wf-vmax-mv 3600 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_4 qcom,wf-pattern 0x7e7e -tx
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_4 qcom,wf-play-rate-us 5000 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_4 qcom,lra-auto-resonance-disable
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_5 qcom,effect-id 5 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_5 qcom,wf-vmax-mv 3600 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_5 qcom,wf-pattern 0x7e7e7e -tx
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_5 qcom,wf-play-rate-us 6667 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_5 qcom,wf-brake-pattern 0x3000000 -tu
+/soc/qcom,spmi@800f000/qcom,pm660@1/qcom,haptic@c000/wf_5 qcom,lra-auto-resonance-disable
