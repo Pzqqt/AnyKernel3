@@ -135,23 +135,26 @@ ${bin}/magiskboot decompress ${home}/Image.xz ${home}/Image
 [ -f ${home}/Image ] || abort "! Failed to extract Image!"
 
 # Patch dtb file
-dts_patch_files=""
+fdt_patch_files=""
 if [ "$qti_haptics" == "2" ]; then
-    dts_patch_files="$dts_patch_files ${home}/diff_patches/qti-haptics.diff"
+    fdt_patch_files="$fdt_patch_files ${home}/fdt_patches/qti-haptics.fdtp"
 fi
-if [ -n "$dts_patch_files" ]; then
-    ui_print "- Recompiling dtb image..."
+if [ -n "$fdt_patch_files" ]; then
+    ui_print "- Patching dtb file..."
     dtb_img_splitted=`${bin}/dtp -i $dtb_img | awk '{print $NF}'` || abort "! Failed to split dtb file!"
     # ${dtb_img}-0: sdm660-mtp.dtb
     # ${dtb_img}-1: sdm636-mtp_e7s.dtb
     # We don't need to pay attention to the first dtb file
     dtb_img_splitted_1="${dtb_img}-1"
     [ -f "$dtb_img_splitted_1" ] || abort "! Can not found $dtb_img_splitted_1!"
-    ${bin}/dtc -q -I dtb -O dts -o "${dtb_img_splitted_1}.dts" "$dtb_img_splitted_1" || abort "! Failed to decompile dtb file!"
-    for diff_file in $dts_patch_files; do
-        patch -i $diff_file "${dtb_img_splitted_1}.dts" || abort "! Failed to patch dts file!"
+    for fdt_patch_file in $fdt_patch_files; do
+        cat $fdt_patch_file | while read line; do
+            # Ignore comment lines and blank lines
+            echo "$line" | grep -qE '^#[[:blank:].]*' && continue
+            [ -z "$line" ] && continue
+            ${bin}/fdtput $dtb_img_splitted_1 $line || abort "! Failed to apply fdt patch: $fdt_patch_file"
+        done
     done
-    ${bin}/dtc -q -I dts -O dtb -o "$dtb_img_splitted_1" "${dtb_img_splitted_1}.dts" || abort "! Failed to recompile dtb file!"
     cat $dtb_img_splitted > "$dtb_img"_patched
     dtb_img="$dtb_img"_patched
 fi
