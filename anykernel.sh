@@ -57,6 +57,16 @@ apply_patch() {
   [ "$(sha1 $1)" == "$2" ] || abort "! Failed to patch $1!"
 }
 
+apply_fdt_patch() {
+  # apply_fdt_patch <dtb_img> <fdt_patch_file>
+  [ -f "$2" ] || abort "! Can not found fdt patch file: $2!"
+  cat $2 | grep -vE '^#' | while read line; do
+    [ -n "$line" ] && {
+      ${bin}/fdtput $1 $line || abort "! Failed to apply fdt patch: $2"
+    }
+  done
+}
+
 is_new_camblobs() {
   local so_file=/vendor/lib/hw/camera.sdm660.so
   [ -f $so_file ] || { echo 2; return; }
@@ -168,13 +178,9 @@ if [ -n "$fdt_patch_files" ]; then
     dtb_img_splitted_1="${dtb_img}-1"
     [ -f "$dtb_img_splitted_1" ] || abort "! Can not found $dtb_img_splitted_1!"
     for fdt_patch_file in $fdt_patch_files; do
-        cat $fdt_patch_file | while read line; do
-            # Ignore comment lines and blank lines
-            echo "$line" | grep -qE '^#[[:blank:].]*' && continue
-            [ -z "$line" ] && continue
-            ${bin}/fdtput $dtb_img_splitted_1 $line || abort "! Failed to apply fdt patch: $fdt_patch_file"
-        done
+        apply_fdt_patch $dtb_img_splitted_1 $fdt_patch_file
     done
+    sync
     cat $dtb_img_splitted > "$dtb_img"_patched
     dtb_img="$dtb_img"_patched
 fi
