@@ -43,6 +43,12 @@ split_boot;
 # I can use busybox's tools directly and preferentially here.
 # Nice job osm0sis!
 
+aroma_show_progress() {
+  # aroma_show_progress <amount> <time>
+  # Note: In Aroma Installer, the unit of parameter "time" is milliseconds.
+  show_progress $1 "-${2}"
+}
+
 aroma_get_value() {
   [ -f /tmp/aroma/${1}.prop ] && cat /tmp/aroma/${1}.prop | head -n1 | cut -d'=' -f2 || echo ""
 }
@@ -126,10 +132,12 @@ dtb_img=${home}/dtbs/${flag_1}${flag_2}.dtb
 
 # Unpack files
 ui_print "- Unpacking files..."
+set_progress 0.1
 ${bin}/magiskboot decompress ${home}/dtbs/dtbs.tar.xz - | tar -xvC ${home}/dtbs
 [ -f "$dtb_img" ] || abort "! Failed to extract dtbs!"
 ${bin}/magiskboot decompress ${home}/Image.xz ${home}/Image
 [ -f ${home}/Image ] || abort "! Failed to extract Image!"
+set_progress 0.2
 
 # Patch dtb file
 fdt_patch_files=""
@@ -212,9 +220,11 @@ if [ $((magisk_patched & 3)) -eq 1 ]; then
         strings ${home}/Image | grep -E 'Linux version.*#' > ${home}/vertmp
     fi
 fi
+set_progress 0.3
 
 # Compress Image
 ui_print "- Compress Image..."
+aroma_show_progress 0.2 6000
 cat ${home}/Image | gzip -f > ${home}/Image.gz
 [ $? == 0 ] || ${bin}/magiskboot compress=gzip ${home}/Image ${home}/Image.gz
 [ -f ${home}/Image.gz ] || abort "! Failed to compress Image!"
@@ -223,6 +233,7 @@ rm -f ${home}/Image.xz ${home}/Image
 sync
 
 ui_print "- Preparation is complete, installation officially begin..."
+aroma_show_progress 0.5 2000
 ############################## CUSTOM END ##############################
 
 # Pzqqt: Skip ramdisk unpacking and repacking (we don't modify anything in the ramdisk)
