@@ -36,6 +36,12 @@ contains() {
 file_getprop() {
   grep "^$2=" "$1" | cut -d= -f2-;
 }
+
+# show_progress <amount> <time>
+show_progress() { echo "progress $1 $2" >> /proc/self/fd/$OUTFD; }
+
+# set_progress <amount>
+set_progress() { echo "set_progress $1" >> /proc/self/fd/$OUTFD; }
 ###
 
 ### file/directory attributes functions:
