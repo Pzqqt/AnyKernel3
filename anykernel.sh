@@ -179,18 +179,10 @@ if [ "$efficient_frequencies" == "1" ]; then
 fi
 if [ -n "$fdt_patch_files" ]; then
     ui_print "- Patching dtb file..."
-    dtb_img_splitted=`${bin}/dtp -i $dtb_img | awk '{print $NF}'` || abort "! Failed to split dtb file!"
-    # ${dtb_img}-0: sdm660-mtp.dtb
-    # ${dtb_img}-1: sdm636-mtp_e7s.dtb
-    # We don't need to pay attention to the first dtb file
-    dtb_img_splitted_1="${dtb_img}-1"
-    [ -f "$dtb_img_splitted_1" ] || abort "! Can not found $dtb_img_splitted_1!"
     for fdt_patch_file in $fdt_patch_files; do
-        apply_fdt_patch $dtb_img_splitted_1 $fdt_patch_file
+        apply_fdt_patch $dtb_img $fdt_patch_file
     done
     sync
-    cat $dtb_img_splitted > "$dtb_img"_patched
-    dtb_img="$dtb_img"_patched
 fi
 
 # Patch kernel Image
