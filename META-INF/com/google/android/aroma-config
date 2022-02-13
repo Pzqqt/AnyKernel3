@@ -48,10 +48,24 @@ if prop("lang.prop", "selected") == "1" then
     setvar("pa_oc_s1",        "Yes (big: 2208 MHz, LITTLE: 1843 MHz)");
     setvar("pa_oc_s2",        "No (Stock, recommend)");
 
-    setvar("pa_uv",           "Select CPU & GPU UV");
-    setvar("pa_uv_1",         "Note: Reduce the voltage can save battery,\nbut may also cause the device instability!\nSelect \"No UV\" if you are not sure.");
-    setvar("pa_uv_s1",        "No UV (default)");
-    setvar("pa_uv_s2",        "80 mV (Danger!)");
+    setvar("pa_uv",           "Need UV?");
+    setvar("pa_uv_1",         "Note: Reduce the voltage can save battery,\nbut may also cause the device instability!");
+    setvar("pa_uv_s1",        "No, please keep default voltage.");
+    setvar("pa_uv_s2",        "Yes, I need it!");
+    setvar("pa_uv_warning",   "If the device is damaged or data is lost due to UV, developer of Panda Kernel is not responsible for it!");
+
+    setvar("pa_cpu_pow_uv",   "Select UV level of the power cores");
+    setvar("pa_cpu_pow_uv_1", "Note: The power cores (LITTLE) focuses more on battery saving, it's suitable for the daily tasks of the device.");
+    setvar("pa_cpu_perf_uv",  "Select UV level of the performance cores");
+    setvar("pa_cpu_perf_uv_1","Note: The performance cores (big) focuses more on performance, it's suitable for gaming.");
+    setvar("pa_gpu_uv",       "Select UV level of GPU");
+    setvar("pa_gpu_uv_1",     "Note: GPU is for processing graphics. You know...");
+    setvar("pa_uv_lv0",       "No UV (default)");
+    setvar("pa_uv_lv1",       "20 mV");
+    setvar("pa_uv_lv2",       "40 mV");
+    setvar("pa_uv_lv3",       "80 mV (Danger!)");
+    setvar("pa_uv_lv4",       "120 mV (Very Danger!)");
+    setvar("pa_uv_lv5",       "160 mV (BROKEN!)");
 
     setvar("pa_cam",          "Select camera blobs");
     setvar("pa_cam_1",        "Note: If the camera not working after flashing,\nplease reflash this kernel & select other option here.");
@@ -125,10 +139,24 @@ if prop("lang.prop", "selected") == "2" then
     setvar("pa_oc_s1",        "是 (大核: 2208 MHz, 小核: 1843 MHz)");
     setvar("pa_oc_s2",        "否 (默认频率, 推荐)");
 
-    setvar("pa_uv",           "选择 CPU & GPU 降压方案");
-    setvar("pa_uv_1",         "注意: 适当降压可以省电, 但是也可能会导致设备不稳定!\n如果你不确定, 请选择 \"不降压\".");
-    setvar("pa_uv_s1",        "不降压 (默认)");
-    setvar("pa_uv_s2",        "80 mV (危险!)");
+    setvar("pa_uv",           "你需要降压吗?");
+    setvar("pa_uv_1",         "注意: 适当降压可以省电, 但是也可能会导致设备不稳定!");
+    setvar("pa_uv_s1",        "否, 保持默认电压.");
+    setvar("pa_uv_s2",        "是, 我需要降压!");
+    setvar("pa_uv_warning",   "如因降压导致设备损坏或数据丢失, Panda 内核的开发者不负任何责任!");
+
+    setvar("pa_cpu_pow_uv",   "选择能效核心 (小核) 的降压等级");
+    setvar("pa_cpu_pow_uv_1", "注意: 能效核心 (小核) 更注重于节能, 适用于日常任务.");
+    setvar("pa_cpu_perf_uv",  "选择性能核心 (大核) 的降压等级");
+    setvar("pa_cpu_perf_uv_1","注意: 性能核心 (大核) 更注重于性能, 适用于游戏.");
+    setvar("pa_gpu_uv",       "选择 GPU 的降压等级");
+    setvar("pa_gpu_uv_1",     "注意: GPU 用于处理图形. 你懂的...");
+    setvar("pa_uv_lv0",       "不降压 (默认)");
+    setvar("pa_uv_lv1",       "20 mV");
+    setvar("pa_uv_lv2",       "40 mV");
+    setvar("pa_uv_lv3",       "80 mV (危险!)");
+    setvar("pa_uv_lv4",       "120 mV (非常危险!)");
+    setvar("pa_uv_lv5",       "160 mV (可能导致无法进入系统!)");
 
     setvar("pa_cam",          "选择相机 blobs 版本");
     setvar("pa_cam_1",        "注意: 如果刷入内核之后相机出现问题,\n请重刷本内核并在此选择其他选项.");
@@ -216,10 +244,57 @@ selectbox(
     "\n\n<@center>" + getvar("pa_uv") + "</@>",
     "<@center>\n\n\n\n\n\n\n\n" + getvar("pa_uv_1") + "\n</@>",
     "",
-    "uv_level.prop",
+    "uv_confirm.prop",
     getvar("pa_uv_s1"), "", 1,
     getvar("pa_uv_s2"), "", 0
 );
+if prop("uv_confirm.prop", "selected.0") == "2" then
+    if confirm(
+        getvar("pa_warning"),
+        getvar("pa_uv_warning"),
+        "@warning",
+        getvar("pa_text_yes"),
+        getvar("pa_text_no")) != "yes"
+    then
+        back("1");
+    endif;
+    selectbox(
+        "\n\n<@center>" + getvar("pa_cpu_pow_uv") + "</@>",
+        "<@center>\n\n\n\n\n\n\n\n" + getvar("pa_cpu_pow_uv_1") + "\n</@>",
+        "",
+        "cpu_pow_uv_level.prop",
+        getvar("pa_uv_lv0"), "", 1,
+        getvar("pa_uv_lv1"), "", 0,
+        getvar("pa_uv_lv2"), "", 0,
+        getvar("pa_uv_lv3"), "", 0,
+        getvar("pa_uv_lv4"), "", 0,
+        getvar("pa_uv_lv5"), "", 0
+    );
+    selectbox(
+        "\n\n<@center>" + getvar("pa_cpu_perf_uv") + "</@>",
+        "<@center>\n\n\n\n\n\n\n\n" + getvar("pa_cpu_perf_uv_1") + "\n</@>",
+        "",
+        "cpu_perf_uv_level.prop",
+        getvar("pa_uv_lv0"), "", 1,
+        getvar("pa_uv_lv1"), "", 0,
+        getvar("pa_uv_lv2"), "", 0,
+        getvar("pa_uv_lv3"), "", 0,
+        getvar("pa_uv_lv4"), "", 0,
+        getvar("pa_uv_lv5"), "", 0
+    );
+    selectbox(
+        "\n\n<@center>" + getvar("pa_gpu_uv") + "</@>",
+        "<@center>\n\n\n\n\n\n\n\n" + getvar("pa_gpu_uv_1") + "\n</@>",
+        "",
+        "gpu_uv_level.prop",
+        getvar("pa_uv_lv0"), "", 1,
+        getvar("pa_uv_lv1"), "", 0,
+        getvar("pa_uv_lv2"), "", 0,
+        getvar("pa_uv_lv3"), "", 0,
+        getvar("pa_uv_lv4"), "", 0,
+        getvar("pa_uv_lv5"), "", 0
+    );
+endif;
 
 selectbox(
     "\n\n<@center>" + getvar("pa_cam") + "</@>",

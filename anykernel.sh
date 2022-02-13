@@ -80,9 +80,24 @@ is_new_camblobs() {
   echo $?
 }
 
+parse_uv_level() {
+  case "$1" in
+    "1") echo 0;;
+    "2") echo 20000;;  # 20 mV
+    "3") echo 40000;;  # 40 mV
+    "4") echo 80000;;  # 80 mV
+    "5") echo 120000;; # 120 mV
+    "6") echo 160000;; # 160 mV
+    *) echo 0;;
+  esac
+}
+
 # Read value by user selected from aroma prop files
 is_oc=$(aroma_get_value is_oc)                                   # OC: 1; Non-OC:2
-uv_level=$(aroma_get_value uv_level)                             # No UV: 1; 80mv: 2
+uv_confirm=$(aroma_get_value uv_confirm)                         # No UV: 1; UV:2
+cpu_pow_uv_level=$(aroma_get_value cpu_pow_uv_level)
+cpu_perf_uv_level=$(aroma_get_value cpu_perf_uv_level)
+gpu_uv_level=$(aroma_get_value gpu_uv_level)
 is_fixcam=$(aroma_get_value is_fixcam)                           # New blobs: 1; Old blobs: 2; Auto detection: 3
 headphone_buttons_mode=$(aroma_get_value headphone_buttons_mode) # Stock: 1; Alternative: 2
 energy_model=$(aroma_get_value energy_model)                     # CAF: 1; Kdrag0n-660: 2, Kdrag0n-636: 3, Hypeartist: 4
@@ -126,15 +141,16 @@ if [ "$is_fixcam" == "3" ]; then
 fi
 
 # Select dtb file
-[ "$is_oc" == "1" ] && flag_1="2" || flag_1="1"
-[ -n "$uv_level" ] && flag_2="$uv_level" || flag_2="1"
-dtb_img=${home}/dtbs/${flag_1}${flag_2}.dtb
+if [ "$is_oc" == "1" ]; then
+    dtb_img=${home}/dtbs/oc.dtb
+else
+    dtb_img=${home}/dtbs/nooc.dtb
+fi
+[ -f "$dtb_img" ] || abort "! Cannot found $dtb_img!"
 
 # Unpack files
 ui_print "- Unpacking files..."
 set_progress 0.1
-${bin}/magiskboot decompress ${home}/dtbs/dtbs.tar.xz - | tar -xvC ${home}/dtbs
-[ -f "$dtb_img" ] || abort "! Failed to extract dtbs!"
 ${bin}/magiskboot decompress ${home}/Image.xz ${home}/Image
 [ -f ${home}/Image ] || abort "! Failed to extract Image!"
 set_progress 0.2
@@ -184,20 +200,24 @@ if [ -n "$fdt_patch_files" ]; then
     done
     sync
 fi
+if [ "$uv_confirm" == "2" ]; then
+    ui_print "- Applying UV changes..."
+    cpu_pow_uv=$(parse_uv_level $cpu_pow_uv_level)
+    cpu_perf_uv=$(parse_uv_level $cpu_perf_uv_level)
+    gpu_uv=$(parse_uv_level $gpu_uv_level)
+    [ "$cpu_pow_uv" != "0" ]  && ${bin}/fdtput $dtb_img /soc/cprh-ctrl@179c8000/thread@0/regulator qcom,custom-voltage-reduce $cpu_pow_uv -tu
+    [ "$cpu_perf_uv" != "0" ] && ${bin}/fdtput $dtb_img /soc/cprh-ctrl@179c4000/thread@0/regulator qcom,custom-voltage-reduce $cpu_perf_uv -tu
+    [ "$gpu_uv" != "0" ]      && ${bin}/fdtput $dtb_img /soc/cpr4-ctrl@05061000/thread@0/regulator qcom,custom-voltage-reduce $gpu_uv -tu
+    sync
+fi
 
 # Patch kernel Image
-case "${flag_2}${is_fixcam}" in
-    "12") [ "$(sha1 ${home}/Image)" == "@SHA1_STOCK@" ] || abort "! Image file is corrupted";;
-    *) {
-        ui_print "- Patching Image file..."
-        case "${flag_2}${is_fixcam}" in
-            "22") apply_patch ${home}/Image "@SHA1_10@" "@SHA1_STOCK@" ${home}/bs_patches/80uv.p;;
-            "11") apply_patch ${home}/Image "@SHA1_01@" "@SHA1_STOCK@" ${home}/bs_patches/campatch.p;;
-            "21") apply_patch ${home}/Image "@SHA1_11@" "@SHA1_STOCK@" ${home}/bs_patches/80uv_campatch.p;;
-            *)    abort "! Unable to parse Aroma flags!";;
-        esac
-    };;
-esac
+if [ "$is_fixcam" == "1" ]; then
+    ui_print "- Patching Image file..."
+    apply_patch ${home}/Image "@SHA1_01@" "@SHA1_STOCK@" ${home}/bs_patches/new_camera_blobs.p
+else
+    [ "$(sha1 ${home}/Image)" == "@SHA1_STOCK@" ] || abort "! Image file is corrupted"
+fi
 
 # Use new dtb file
 cp -f $dtb_img ${split_img}/kernel_dtb
@@ -216,7 +236,7 @@ set_progress 0.3
 
 # Compress Image
 ui_print "- Compress Image..."
-aroma_show_progress 0.2 6000
+aroma_show_progress 0.2 7000
 cat ${home}/Image | gzip -f > ${home}/Image.gz
 [ $? == 0 ] || ${bin}/magiskboot compress=gzip ${home}/Image ${home}/Image.gz
 [ -f ${home}/Image.gz ] || abort "! Failed to compress Image!"
@@ -225,7 +245,7 @@ rm -f ${home}/Image.xz ${home}/Image
 sync
 
 ui_print "- Preparation is complete, installation officially begin..."
-aroma_show_progress 0.5 2000
+aroma_show_progress 0.5 2500
 ############################## CUSTOM END ##############################
 
 # Pzqqt: Skip ramdisk unpacking and repacking (we don't modify anything in the ramdisk)
