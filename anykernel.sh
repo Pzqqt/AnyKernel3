@@ -86,8 +86,10 @@ parse_uv_level() {
     "2") echo 20000;;  # 20 mV
     "3") echo 40000;;  # 40 mV
     "4") echo 80000;;  # 80 mV
-    "5") echo 120000;; # 120 mV
-    "6") echo 160000;; # 160 mV
+    "5") echo 100000;; # 100 mV
+    "6") echo 120000;; # 120 mV
+    "7") echo 140000;; # 140 mV
+    "8") echo 160000;; # 160 mV
     *) echo 0;;
   esac
 }
