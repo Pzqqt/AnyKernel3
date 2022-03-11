@@ -24,6 +24,7 @@ supported.patchlevels=
 block=/dev/block/bootdevice/by-name/boot;
 is_slot_device=0;
 ramdisk_compression=auto;
+patch_vbmeta_flag=auto;
 
 
 ## AnyKernel methods (DO NOT CHANGE)
@@ -231,7 +232,7 @@ if [ $((magisk_patched & 3)) -eq 1 ]; then
     ui_print "- Magisk detected! Patching Image file again..."
     ${bin}/magiskboot hexpatch ${home}/Image 736B69705F696E697472616D667300 77616E745F696E697472616D667300
     if [ "$(file_getprop ${home}/anykernel.sh do.modules)$(file_getprop ${home}/anykernel.sh do.systemless)" == "11" ]; then
-        strings ${home}/Image | grep -E 'Linux version.*#' > ${home}/vertmp
+        strings ${home}/Image | grep -E -m1 'Linux version.*#' > ${home}/vertmp
     fi
 fi
 set_progress 0.3
