@@ -326,7 +326,6 @@ flash_boot() {
         fi;
         if [ $((magisk_patched & 3)) -eq 1 ]; then
           # Pzqqt: Skip Magisk patching for kernel (I have moved to anykernel.sh)
-          test ! -f .magisk && $bin/magiskboot cpio ramdisk.cpio "extract .backup/.magisk .magisk";
           [ ! -f .magisk ] && $bin/magiskboot cpio ramdisk.cpio "extract .backup/.magisk .magisk";
           export $(cat .magisk);
           [ $((magisk_patched & 8)) -ne 0 ] && export TWOSTAGEINIT=true;
