@@ -49,7 +49,7 @@ if prop("lang.prop", "selected") == "1" then
     setvar("pa_oc_s2",        "No (Stock, recommend)");
 
     setvar("pa_uv",           "Need UV?");
-    setvar("pa_uv_1",         "Note: Reduce the voltage can save battery,\nbut may also cause the device instability!");
+    setvar("pa_uv_1",         "Note: Reduce the voltage can save battery, but excessive voltage reduction will cause device instability!\n(not booting, randomly reboot, abnormal display)\nAt this point you need to reflash this kernel and lower the UV level.");
     setvar("pa_uv_s1",        "No, please keep default voltage.");
     setvar("pa_uv_s2",        "Yes, I need it!");
     setvar("pa_uv_warning",   "If the device is damaged or data is lost due to UV, developer of Panda Kernel is not responsible for it!");
@@ -58,8 +58,6 @@ if prop("lang.prop", "selected") == "1" then
     setvar("pa_cpu_pow_uv_1", "Note: The power cores (LITTLE) focuses more on battery saving, it's suitable for the daily tasks of the device.");
     setvar("pa_cpu_perf_uv",  "Select UV level of the performance cores");
     setvar("pa_cpu_perf_uv_1","Note: The performance cores (big) focuses more on performance, it's suitable for gaming.");
-    setvar("pa_gpu_uv",       "Select UV level of GPU");
-    setvar("pa_gpu_uv_1",     "Note: GPU is for processing graphics. You know...");
     setvar("pa_uv_lv1",       "No UV (default)");
     setvar("pa_uv_lv2",       "20 mV");
     setvar("pa_uv_lv3",       "40 mV");
@@ -134,7 +132,7 @@ if prop("lang.prop", "selected") == "2" then
     setvar("pa_oc_s2",        "否 (默认频率, 推荐)");
 
     setvar("pa_uv",           "你需要降压吗?");
-    setvar("pa_uv_1",         "注意: 适当降压可以省电, 但是也可能会导致设备不稳定!");
+    setvar("pa_uv_1",         "注意: 适当降压可以省电, 但是过度降压会导致设备不稳定!\n(例如: 无法开机, 使用时随机重启, 屏幕显示异常)\n此时你需要重刷内核并降低降压等级.");
     setvar("pa_uv_s1",        "否, 保持默认电压.");
     setvar("pa_uv_s2",        "是, 我需要降压!");
     setvar("pa_uv_warning",   "如因降压导致设备损坏或数据丢失, Panda 内核的开发者不负任何责任!");
@@ -143,8 +141,6 @@ if prop("lang.prop", "selected") == "2" then
     setvar("pa_cpu_pow_uv_1", "注意: 能效核心 (小核) 更注重于节能, 适用于日常任务.");
     setvar("pa_cpu_perf_uv",  "选择性能核心 (大核) 的降压等级");
     setvar("pa_cpu_perf_uv_1","注意: 性能核心 (大核) 更注重于性能, 适用于游戏.");
-    setvar("pa_gpu_uv",       "选择 GPU 的降压等级");
-    setvar("pa_gpu_uv_1",     "注意: GPU 用于处理图形. 你懂的...");
     setvar("pa_uv_lv1",       "不降压 (默认)");
     setvar("pa_uv_lv2",       "20 mV");
     setvar("pa_uv_lv3",       "40 mV");
@@ -237,15 +233,12 @@ selectbox(
     getvar("pa_uv_s2"), "", 0
 );
 if prop("uv_confirm.prop", "selected.0") == "2" then
-    if confirm(
+    alert(
         getvar("pa_warning"),
         getvar("pa_uv_warning"),
         "@warning",
-        getvar("pa_text_yes"),
-        getvar("pa_text_no")) != "yes"
-    then
-        back("1");
-    endif;
+        getvar("pa_text_yes")
+    );
     selectbox(
         "\n\n<@center>" + getvar("pa_cpu_pow_uv") + "</@>",
         "<@center>\n\n\n\n\n\n\n\n" + getvar("pa_cpu_pow_uv_1") + "\n</@>",
@@ -265,20 +258,6 @@ if prop("uv_confirm.prop", "selected.0") == "2" then
         "<@center>\n\n\n\n\n\n\n\n" + getvar("pa_cpu_perf_uv_1") + "\n</@>",
         "",
         "cpu_perf_uv_level.prop",
-        getvar("pa_uv_lv1"), "", 1,
-        getvar("pa_uv_lv2"), "", 0,
-        getvar("pa_uv_lv3"), "", 0,
-        getvar("pa_uv_lv4"), "", 0,
-        getvar("pa_uv_lv5"), "", 0,
-        getvar("pa_uv_lv6"), "", 0,
-        getvar("pa_uv_lv7"), "", 0,
-        getvar("pa_uv_lv8"), "", 0
-    );
-    selectbox(
-        "\n\n<@center>" + getvar("pa_gpu_uv") + "</@>",
-        "<@center>\n\n\n\n\n\n\n\n" + getvar("pa_gpu_uv_1") + "\n</@>",
-        "",
-        "gpu_uv_level.prop",
         getvar("pa_uv_lv1"), "", 1,
         getvar("pa_uv_lv2"), "", 0,
         getvar("pa_uv_lv3"), "", 0,
