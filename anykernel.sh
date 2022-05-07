@@ -100,7 +100,6 @@ is_oc=$(aroma_get_value is_oc)                                   # OC: 1; Non-OC
 uv_confirm=$(aroma_get_value uv_confirm)                         # No UV: 1; UV:2
 cpu_pow_uv_level=$(aroma_get_value cpu_pow_uv_level)
 cpu_perf_uv_level=$(aroma_get_value cpu_perf_uv_level)
-gpu_uv_level=$(aroma_get_value gpu_uv_level)
 is_fixcam=$(aroma_get_value is_fixcam)                           # New blobs: 1; Old blobs: 2; Auto detection: 3
 headphone_buttons_mode=$(aroma_get_value headphone_buttons_mode) # Stock: 1; Alternative: 2
 energy_model=$(aroma_get_value energy_model)                     # CAF: 1; Kdrag0n-660: 2, Kdrag0n-636: 3, Hypeartist: 4
@@ -207,10 +206,8 @@ if [ "$uv_confirm" == "2" ]; then
     ui_print "- Applying UV changes..."
     cpu_pow_uv=$(parse_uv_level $cpu_pow_uv_level)
     cpu_perf_uv=$(parse_uv_level $cpu_perf_uv_level)
-    gpu_uv=$(parse_uv_level $gpu_uv_level)
     [ "$cpu_pow_uv" != "0" ]  && ${bin}/fdtput $dtb_img /soc/cprh-ctrl@179c8000/thread@0/regulator qcom,custom-voltage-reduce $cpu_pow_uv -tu
     [ "$cpu_perf_uv" != "0" ] && ${bin}/fdtput $dtb_img /soc/cprh-ctrl@179c4000/thread@0/regulator qcom,custom-voltage-reduce $cpu_perf_uv -tu
-    [ "$gpu_uv" != "0" ]      && ${bin}/fdtput $dtb_img /soc/cpr4-ctrl@05061000/thread@0/regulator qcom,custom-voltage-reduce $gpu_uv -tu
     sync
 fi
 
@@ -247,6 +244,7 @@ rm -f ${home}/Image.xz ${home}/Image
 
 sync
 
+set_progress 0.5
 ui_print "- Preparation is complete, installation officially begin..."
 aroma_show_progress 0.5 2500
 ############################## CUSTOM END ##############################
