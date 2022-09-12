@@ -43,6 +43,12 @@ if prop("lang.prop", "selected") == "1" then
 
     setvar("pa_wrong_device", "This kernel is only for Redmi Note 5 Pro (whyred) devices!");
 
+    setvar("pa_os",           "Select Android OS version");
+    setvar("pa_os_1",         "Note: Selecting the wrong Android OS version\nmay cause some system malfunctions!");
+    setvar("pa_os_s1",        "Android 8~11");
+    setvar("pa_os_s2",        "Android 12 and above");
+    setvar("pa_os_s3",        "Auto detection");
+
     setvar("pa_oc",           "Need CPU overclock?");
     setvar("pa_oc_1",         "Note: Choose \"yes\" if you need best performance\n& don't care about CPU life and battery life.\n\nBeware of device explosion!");
     setvar("pa_oc_s1",        "Yes (big: 2208 MHz, LITTLE: 1843 MHz)");
@@ -125,6 +131,12 @@ if prop("lang.prop", "selected") == "2" then
     setvar("pa_plswait",      "请稍侯...");
 
     setvar("pa_wrong_device", "该内核仅适用于红米 Note 5 (whyred) 设备!");
+
+    setvar("pa_os",           "选择 Android 系统版本");
+    setvar("pa_os_1",         "注意: 选择错误的 Android 系统版本\n可能会导致部分系统功能异常!");
+    setvar("pa_os_s1",        "Android 8~11");
+    setvar("pa_os_s2",        "Android 12 及以上");
+    setvar("pa_os_s3",        "自动检测");
 
     setvar("pa_oc",           "你需要 CPU 超频吗?");
     setvar("pa_oc_1",         "注意: 如果需要最佳性能并且\n不在乎 CPU 寿命和电池续航的话, 可以考虑选择\"是\".\n\n当心设备爆炸!");
@@ -214,6 +226,16 @@ if resexec("is_whyred.sh") != "0" then
     );
     exit("");
 endif;
+
+selectbox(
+    "\n\n<@center>" + getvar("pa_os") + "</@>",
+    "<@center>\n\n\n\n\n\n\n\n" + getvar("pa_os_1") + "\n</@>",
+    "",
+    "need_ebpf.prop",
+    getvar("pa_os_s1"), "", 0,
+    getvar("pa_os_s2"), "", 0,
+    getvar("pa_os_s3"), "", 1
+);
 
 selectbox(
     "\n\n<@center>" + getvar("pa_oc") + "</@>",

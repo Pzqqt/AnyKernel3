@@ -67,10 +67,8 @@ apply_patch() {
 apply_fdt_patch() {
   # apply_fdt_patch <dtb_img> <fdt_patch_file>
   [ -f "$2" ] || abort "! Can not found fdt patch file: $2!"
-  cat $2 | grep -vE '^#' | while read line; do
-    [ -n "$line" ] && {
-      ${bin}/fdtput $1 $line || abort "! Failed to apply fdt patch: $2"
-    }
+  cat $2 | sed -e 's/[ 	]*#.*//' -e '/^[ 	]*$/d' | while read line; do
+    ${bin}/fdtput $1 $line || abort "! Failed to apply fdt patch: $2"
   done
 }
 
@@ -96,6 +94,7 @@ parse_uv_level() {
 }
 
 # Read value by user selected from aroma prop files
+need_ebpf=$(aroma_get_value need_ebpf)                           # Android 8~11 (no ebpf): 1; Android 12+ (need ebpf):2; Auto detection: 3
 is_oc=$(aroma_get_value is_oc)                                   # OC: 1; Non-OC:2
 uv_confirm=$(aroma_get_value uv_confirm)                         # No UV: 1; UV:2
 cpu_pow_uv_level=$(aroma_get_value cpu_pow_uv_level)
@@ -137,6 +136,18 @@ else
     patch_cmdline "androidboot.wiredbtnaltmode" ""
 fi
 
+# eBPF
+if [ "$need_ebpf" == "3" ]; then
+    need_ebpf=2
+    sdk=`file_getprop /system/build.prop ro.build.version.sdk`
+    if [ -z "$sdk" ]; then
+        ui_print "! Failed to check Android OS version!"
+        ui_print "! Continue as Android 12+"
+    else
+        [ "$sdk" -le "30" ] && need_ebpf=1
+    fi
+fi
+
 # Camera blobs
 if [ "$is_fixcam" == "3" ]; then
     is_fixcam="2"
@@ -166,8 +177,15 @@ fi
 # Unpack files
 ui_print "- Unpacking files..."
 set_progress 0.1
-${bin}/magiskboot decompress ${home}/Image.xz ${home}/Image
-[ -f ${home}/Image ] || abort "! Failed to extract Image!"
+kernel_img=${home}/Image
+[ "$need_ebpf" == "1" ] && _kernel_img=${home}/Image_noebpf || _kernel_img=${home}/Image
+${bin}/magiskboot decompress ${_kernel_img}.xz $_kernel_img
+[ -f $_kernel_img ] || abort "! Failed to extract $_kernel_img!"
+[ "$need_ebpf" == "1" ] && {
+    rm ${_kernel_img}.xz
+    mv $_kernel_img $kernel_img
+}
+unset _kernel_img
 set_progress 0.2
 
 # Patch dtb file
@@ -192,12 +210,18 @@ if [ "$uv_confirm" == "2" ]; then
 fi
 
 # Patch kernel Image
-if [ "$is_fixcam" == "1" ]; then
-    ui_print "- Patching Image file..."
-    apply_patch ${home}/Image "@SHA1_01@" "@SHA1_STOCK@" ${home}/bs_patches/new_camera_blobs.p
-else
-    [ "$(sha1 ${home}/Image)" == "@SHA1_STOCK@" ] || abort "! Image file is corrupted"
-fi
+case "${is_fixcam}${need_ebpf}" in
+    "22") [ "$(sha1 $kernel_img)" == "@SHA1_STOCK@" ] || abort "! Kernel image is corrupted!";;
+    "21") [ "$(sha1 $kernel_img)" == "@SHA1_01@" ] || abort "! Kernel image is corrupted!";;
+    *) {
+        ui_print "- Patching Image file..."
+        case "${is_fixcam}${need_ebpf}" in
+            "12") apply_patch $kernel_img "@SHA1_10@" "@SHA1_STOCK@" ${home}/bs_patches/ebpf_campatch.p;;
+            "11") apply_patch $kernel_img "@SHA1_11@" "@SHA1_01@" ${home}/bs_patches/noebpf_campatch.p;;
+            *)    abort "! Unable to parse Aroma flags!";;
+        esac
+    };;
+esac
 
 # Use new dtb file
 cp -f $dtb_img ${split_img}/kernel_dtb
@@ -207,9 +231,9 @@ ${bin}/magiskboot cpio "$(ls ${split_img}/ramdisk.cpio* 2>/dev/null | tail -n1)"
 export magisk_patched=$?
 if [ $((magisk_patched & 3)) -eq 1 ]; then
     ui_print "- Magisk detected! Patching Image file again..."
-    ${bin}/magiskboot hexpatch ${home}/Image 736B69705F696E697472616D667300 77616E745F696E697472616D667300
+    ${bin}/magiskboot hexpatch $kernel_img 736B69705F696E697472616D667300 77616E745F696E697472616D667300
     if [ "$(file_getprop ${home}/anykernel.sh do.modules)$(file_getprop ${home}/anykernel.sh do.systemless)" == "11" ]; then
-        strings ${home}/Image | grep -E -m1 'Linux version.*#' > ${home}/vertmp
+        strings $kernel_img | grep -E -m1 'Linux version.*#' > ${home}/vertmp
     fi
 fi
 set_progress 0.3
@@ -217,10 +241,10 @@ set_progress 0.3
 # Compress Image
 ui_print "- Compress Image..."
 aroma_show_progress 0.2 7000
-cat ${home}/Image | gzip -f > ${home}/Image.gz
-[ $? == 0 ] || ${bin}/magiskboot compress=gzip ${home}/Image ${home}/Image.gz
-[ -f ${home}/Image.gz ] || abort "! Failed to compress Image!"
-rm -f ${home}/Image.xz ${home}/Image
+cat $kernel_img | gzip -f > ${kernel_img}.gz
+[ $? == 0 ] || ${bin}/magiskboot compress=gzip $kernel_img ${kernel_img}.gz
+[ -f ${kernel_img}.gz ] || abort "! Failed to compress Image!"
+rm -f ${kernel_img}.xz ${kernel_img}
 
 sync
 
