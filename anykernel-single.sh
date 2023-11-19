@@ -69,15 +69,19 @@ get_keycheck_result() {
 	# - press Vol+: return true (0)
 	# - press Vol-: return false (1)
 
-	# The first execution responds to the button press event,
-	# the second execution responds to the button release event.
-	${bin}/keycheck; ${bin}/keycheck
-	local r_keycode=$?
-	case $r_keycode in
-		"$KEYCODE_UP") return 0;;
-		"$KEYCODE_DOWN") return 1;;
-		*) abort "! Unknown keycode: $r_keycode"
-	esac
+	local rc_1 rc_2
+
+	while true; do
+		# The first execution responds to the button press event,
+		# the second execution responds to the button release event.
+		${bin}/keycheck; rc_1=$?
+		${bin}/keycheck; rc_2=$?
+		[ "$rc_1" == "$rc_2" ] || continue
+		case "$rc_2" in
+			"$KEYCODE_UP") return 0;;
+			"$KEYCODE_DOWN") return 1;;
+		esac
+	done
 }
 
 keycode_select() {
