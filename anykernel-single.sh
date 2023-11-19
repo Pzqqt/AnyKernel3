@@ -105,6 +105,38 @@ keycode_select() {
 	return $r_keycode
 }
 
+get_size() {
+	local _path=$1
+	local _size
+
+	if [ -d "$_path" ]; then
+		echo $(du -bs $_path | awk '{print $1}')
+		return
+	fi
+	if [ -b "$_path" ]; then
+		_size=$(blockdev --getsize64 $_path) && {
+			echo $_size
+			return
+		}
+	fi
+	echo $(wc -c < $_path)
+}
+
+check_super_device_size() {
+	# Check super device size
+	local block_device_size block_device_size_lp
+
+	block_device_size=$(get_size /dev/block/by-name/super) || \
+		abort "! Failed to get super block device size (by blockdev)!"
+	block_device_size_lp=$(${bin}/lpdump 2>/dev/null | grep -E 'Size: [[:digit:]]+ bytes$' | head -n1 | awk '{print $2}') || \
+		abort "! Failed to get super block device size (by lpdump)!"
+	ui_print "- Super block device size:"
+	ui_print "  - Read by blockdev: $block_device_size"
+	ui_print "  - Read by lpdump: $block_device_size_lp"
+	[ "$block_device_size" == "9663676416" ] && [ "$block_device_size_lp" == "9663676416" ] || \
+		abort "! Super block device size mismatch!"
+}
+
 # Check snapshot status
 # Technical details: https://blog.xzr.moe/archives/30/
 ${bin}/snapshotupdater_static dump &>/dev/null
@@ -136,17 +168,6 @@ if [ "$snapshot_status" != "none" ]; then
 	abort "Aborting..."
 fi
 unset rc snapshot_status
-
-# Check super device size
-block_device_size=$(blockdev --getsize64 /dev/block/by-name/super) || \
-	abort "! Failed to get super block device size (by blockdev)!"
-ui_print "Super block device size (read by blockdev): $block_device_size"
-block_device_size_lp=$(${bin}/lpdump 2>/dev/null | grep -E 'Size: [[:digit:]]+ bytes$' | head -n1 | awk '{print $2}') || \
-	abort "! Failed to get super block device size (by lpdump)!"
-ui_print "Super block device size (read by lpdump): $block_device_size_lp"
-[ "$block_device_size" == "9663676416" ] && [ "$block_device_size_lp" == "9663676416" ] || \
-	abort "! Super block device size mismatch!"
-unset block_device_size block_device_size_lp
 
 # Check vendor_dlkm partition status
 [ -d /vendor_dlkm ] || mkdir /vendor_dlkm
@@ -193,8 +214,11 @@ ui_print " "
 if $skip_update_flag; then
 	ui_print "- No need to update /vendor_dlkm partition."
 else
+	do_check_super_device_size=false
+
 	# Dump vendor_dlkm partition image
 	dd if=/dev/block/mapper/vendor_dlkm${slot} of=${home}/vendor_dlkm.img
+	vendor_dlkm_block_size=$(get_size /dev/block/mapper/vendor_dlkm${slot})
 
 	# Backup kernel and vendor_dlkm image
 	if $do_backup_flag; then
@@ -241,17 +265,19 @@ else
 		ui_print "- /vendor_dlkm partition seems to be in ext4 file system."
 		mount ${home}/vendor_dlkm.img $extract_vendor_dlkm_dir -o ro -t ext4 || \
 			abort "! Unsupported file system!"
-		vendor_dlkm_free_space=$(df -k | grep -E "[[:space:]]$extract_vendor_dlkm_dir\$" | awk '{print $4}')
+		vendor_dlkm_free_space=$(df -h | grep -E "[[:space:]]$extract_vendor_dlkm_dir\$" | awk '{print $4}')
 		ui_print "- /vendor_dlkm partition free space: $vendor_dlkm_free_space"
 		umount $extract_vendor_dlkm_dir
 
-		[ "$vendor_dlkm_free_space" -gt 10240 ] || {
+		vendor_dlkm_modules_size=$(get_size ${home}/_vendor_dlkm_modules)
+		vendor_dlkm_need_size=$((vendor_dlkm_modules_size + 10*1024*1024))
+		[ "$vendor_dlkm_block_size" -lt "$vendor_dlkm_need_size" ] && {
 			# Resize vendor_dlkm image
 			ui_print "- /vendor_dlkm partition does not have enough free space!"
 			ui_print "- Trying to resize..."
 
 			${bin}/e2fsck -f -y ${home}/vendor_dlkm.img
-			vendor_dlkm_current_size_mb=$(du -bm ${home}/vendor_dlkm.img | awk '{print $1}')
+			vendor_dlkm_current_size_mb=$(du -m ${home}/vendor_dlkm.img | awk '{print $1}')
 			vendor_dlkm_target_size_mb=$((vendor_dlkm_current_size_mb + 10))
 			${bin}/resize2fs ${home}/vendor_dlkm.img "${vendor_dlkm_target_size_mb}M" || \
 				abort "! Failed to resize vendor_dlkm image!"
@@ -259,6 +285,7 @@ else
 			# e2fsck again
 			${bin}/e2fsck -f -y ${home}/vendor_dlkm.img
 
+			do_check_super_device_size=true
 			unset vendor_dlkm_current_size_mb vendor_dlkm_target_size_mb
 		}
 
@@ -267,6 +294,7 @@ else
 			abort "! Failed to mount vendor_dlkm.img as read-write!"
 
 		extract_vendor_dlkm_modules_dir=${extract_vendor_dlkm_dir}/lib/modules
+		unset vendor_dlkm_free_space vendor_dlkm_modules_size vendor_dlkm_need_size
 	else
 		extract_vendor_dlkm_modules_dir=${extract_vendor_dlkm_dir}/vendor_dlkm/lib/modules
 	fi
@@ -294,9 +322,34 @@ else
 		mkfs_erofs ${extract_vendor_dlkm_dir}/vendor_dlkm ${home}/vendor_dlkm.img || \
 			abort "! Failed to repack the vendor_dlkm image!"
 		rm -rf ${extract_vendor_dlkm_dir}
+
+		vendor_dlkm_image_size=$(get_size ${home}/vendor_dlkm.img)
+		if [ "$vendor_dlkm_image_size" -gt "$vendor_dlkm_block_size" ]; then
+			do_check_super_device_size=true
+		else
+			# Fill the erofs image file to the same size as the vendor_dlkm partition
+			append_empty_file=${home}/_append_empty_file.bin
+			append_empty_file_size=$((vendor_dlkm_block_size - vendor_dlkm_image_size))
+			if [ "$append_empty_file_size" -gt 0 ]; then
+				dd if=/dev/zero of=$append_empty_file bs=$append_empty_file_size count=1
+				mv ${home}/vendor_dlkm.img ${home}/vendor_dlkm_orig.img
+				cat ${home}/vendor_dlkm_orig.img $append_empty_file > ${home}/vendor_dlkm.img
+				rm ${home}/vendor_dlkm_orig.img $append_empty_file
+			fi
+			unset append_empty_file append_empty_file_size
+		fi
+		unset vendor_dlkm_image_size
 	fi
 
-	unset vendor_dlkm_is_ext4 vendor_dlkm_free_space extract_vendor_dlkm_dir extract_vendor_dlkm_modules_dir blocklist_expr
+	$do_check_super_device_size && {
+		ui_print " "
+		ui_print "- The generated image file is larger than the partition size."
+		ui_print "- Checking super partition size..."
+		check_super_device_size  # If the check here fails, it will be aborted directly.
+		ui_print "- Pass!"
+	}
+
+	unset do_check_super_device_size vendor_dlkm_block_size vendor_dlkm_is_ext4 extract_vendor_dlkm_dir extract_vendor_dlkm_modules_dir
 fi
 
 unset no_needed_kos skip_update_flag do_backup_flag
