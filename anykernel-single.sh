@@ -323,22 +323,12 @@ else
 			abort "! Failed to repack the vendor_dlkm image!"
 		rm -rf ${extract_vendor_dlkm_dir}
 
-		vendor_dlkm_image_size=$(get_size ${home}/vendor_dlkm.img)
-		if [ "$vendor_dlkm_image_size" -gt "$vendor_dlkm_block_size" ]; then
+		if [ "$(get_size ${home}/vendor_dlkm.img)" -gt "$vendor_dlkm_block_size" ]; then
 			do_check_super_device_size=true
 		else
 			# Fill the erofs image file to the same size as the vendor_dlkm partition
-			append_empty_file=${home}/_append_empty_file.bin
-			append_empty_file_size=$((vendor_dlkm_block_size - vendor_dlkm_image_size))
-			if [ "$append_empty_file_size" -gt 0 ]; then
-				dd if=/dev/zero of=$append_empty_file bs=$append_empty_file_size count=1
-				mv ${home}/vendor_dlkm.img ${home}/vendor_dlkm_orig.img
-				cat ${home}/vendor_dlkm_orig.img $append_empty_file > ${home}/vendor_dlkm.img
-				rm ${home}/vendor_dlkm_orig.img $append_empty_file
-			fi
-			unset append_empty_file append_empty_file_size
+			truncate -c -s $vendor_dlkm_block_size ${home}/vendor_dlkm.img
 		fi
-		unset vendor_dlkm_image_size
 	fi
 
 	$do_check_super_device_size && {
