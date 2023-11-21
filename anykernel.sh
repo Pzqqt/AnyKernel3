@@ -393,6 +393,12 @@ reset_ak
 dump_boot # use split_boot to skip ramdisk unpack, e.g. for devices with init_boot ramdisk
 
 vendor_boot_modules_dir=${ramdisk}/lib/modules
+if [ -f ${vendor_boot_modules_dir}/perfmgr.ko ]; then
+	# Keep perfmgr.ko
+	cp ${vendor_boot_modules_dir}/perfmgr.ko ${home}/_vendor_boot_modules/
+	echo "perfmgr.ko" >> ${home}/_vendor_boot_modules/modules.load
+	# echo "perfmgr.ko" >> ${home}/_vendor_boot_modules/modules.load.recovery  # Recovery does not require FEAS
+fi
 rm ${vendor_boot_modules_dir}/*
 cp ${home}/_vendor_boot_modules/* ${vendor_boot_modules_dir}/
 set_perm 0 0 0644 ${vendor_boot_modules_dir}/*
