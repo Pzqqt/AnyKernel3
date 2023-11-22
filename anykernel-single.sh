@@ -372,8 +372,9 @@ vendor_boot_modules_dir=${ramdisk}/lib/modules
 if [ -f ${vendor_boot_modules_dir}/perfmgr.ko ]; then
 	# Keep perfmgr.ko
 	cp ${vendor_boot_modules_dir}/perfmgr.ko ${home}/_vendor_boot_modules/
-	echo "perfmgr.ko" >> ${home}/_vendor_boot_modules/modules.load
-	# echo "perfmgr.ko" >> ${home}/_vendor_boot_modules/modules.load.recovery  # Recovery does not require FEAS
+	sed -i '/nfc_i2c\.ko/iperfmgr\.ko' ${home}/_vendor_boot_modules/modules.load
+	sed -i '/nfc_i2c\.ko/iperfmgr\.ko' ${home}/_vendor_boot_modules/modules.load.recovery
+	echo '/lib/modules/perfmgr.ko:' >> ${home}/_vendor_boot_modules/modules.dep
 fi
 rm ${vendor_boot_modules_dir}/*
 cp ${home}/_vendor_boot_modules/* ${vendor_boot_modules_dir}/
