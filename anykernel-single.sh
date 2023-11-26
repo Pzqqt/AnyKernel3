@@ -122,6 +122,10 @@ get_size() {
 	echo $(wc -c < $_path)
 }
 
+bytes_to_mb() {
+	echo $1 | awk '{printf "%.1fM", $1 / 1024 / 1024}'
+}
+
 check_super_device_size() {
 	# Check super device size
 	local block_device_size block_device_size_lp
@@ -262,23 +266,28 @@ else
 	sync
 
 	if $vendor_dlkm_is_ext4; then
-		ui_print "- /vendor_dlkm partition seems to be in ext4 file system."
+		ui_print "- /vendor_dlkm seems to be in ext4 file system."
 		mount ${home}/vendor_dlkm.img $extract_vendor_dlkm_dir -o ro -t ext4 || \
 			abort "! Unsupported file system!"
-		vendor_dlkm_free_space=$(df -h | grep -E "[[:space:]]$extract_vendor_dlkm_dir\$" | awk '{print $4}')
-		ui_print "- /vendor_dlkm partition free space: $vendor_dlkm_free_space"
+		vendor_dlkm_full_space=$(df -B1 | grep -E "[[:space:]]$extract_vendor_dlkm_dir\$" | awk '{print $2}')
+		vendor_dlkm_used_space=$(df -B1 | grep -E "[[:space:]]$extract_vendor_dlkm_dir\$" | awk '{print $3}')
+		vendor_dlkm_free_space=$(df -B1 | grep -E "[[:space:]]$extract_vendor_dlkm_dir\$" | awk '{print $4}')
+		vendor_dlkm_stock_modules_size=$(get_size ${extract_vendor_dlkm_dir}/lib/modules)
+		ui_print "- /vendor_dlkm partition space:"
+		ui_print "  - Total space: $(bytes_to_mb $vendor_dlkm_full_space)"
+		ui_print "  - Used space:  $(bytes_to_mb $vendor_dlkm_used_space)"
+		ui_print "  - Free space:  $(bytes_to_mb $vendor_dlkm_free_space)"
 		umount $extract_vendor_dlkm_dir
 
-		vendor_dlkm_modules_size=$(get_size ${home}/_vendor_dlkm_modules)
-		vendor_dlkm_need_size=$((vendor_dlkm_modules_size + 10*1024*1024))
-		[ "$vendor_dlkm_block_size" -lt "$vendor_dlkm_need_size" ] && {
+		vendor_dlkm_new_modules_size=$(get_size ${home}/_vendor_dlkm_modules)
+		vendor_dlkm_need_size=$((vendor_dlkm_used_space - vendor_dlkm_stock_modules_size + vendor_dlkm_new_modules_size + 10*1024*1024))
+		if [ "$vendor_dlkm_need_size" -ge "$vendor_dlkm_full_space" ]; then
 			# Resize vendor_dlkm image
 			ui_print "- /vendor_dlkm partition does not have enough free space!"
 			ui_print "- Trying to resize..."
 
 			${bin}/e2fsck -f -y ${home}/vendor_dlkm.img
-			vendor_dlkm_current_size_mb=$(du -m ${home}/vendor_dlkm.img | awk '{print $1}')
-			vendor_dlkm_target_size_mb=$((vendor_dlkm_current_size_mb + 10))
+			vendor_dlkm_target_size_mb=$(echo $vendor_dlkm_need_size | awk '{printf "%d", ($1 / 1024 / 1024 + 1)}')
 			${bin}/resize2fs ${home}/vendor_dlkm.img "${vendor_dlkm_target_size_mb}M" || \
 				abort "! Failed to resize vendor_dlkm image!"
 			ui_print "- Resized vendor_dlkm.img size: ${vendor_dlkm_target_size_mb}M."
@@ -286,15 +295,17 @@ else
 			${bin}/e2fsck -f -y ${home}/vendor_dlkm.img
 
 			do_check_super_device_size=true
-			unset vendor_dlkm_current_size_mb vendor_dlkm_target_size_mb
-		}
+			unset vendor_dlkm_target_size_mb
+		else
+			ui_print "- /vendor_dlkm partition has sufficient space."
+		fi
 
 		ui_print "- Trying to mount vendor_dlkm image as read-write..."
 		mount ${home}/vendor_dlkm.img $extract_vendor_dlkm_dir -o rw -t ext4 || \
 			abort "! Failed to mount vendor_dlkm.img as read-write!"
 
+		unset vendor_dlkm_full_space vendor_dlkm_used_space vendor_dlkm_free_space vendor_dlkm_stock_modules_size vendor_dlkm_new_modules_size vendor_dlkm_need_size
 		extract_vendor_dlkm_modules_dir=${extract_vendor_dlkm_dir}/lib/modules
-		unset vendor_dlkm_free_space vendor_dlkm_modules_size vendor_dlkm_need_size
 	else
 		extract_vendor_dlkm_modules_dir=${extract_vendor_dlkm_dir}/vendor_dlkm/lib/modules
 	fi
