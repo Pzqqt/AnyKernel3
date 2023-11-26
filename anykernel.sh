@@ -339,7 +339,8 @@ else
 		cp -f ${extract_vendor_dlkm_modules_dir}/qti_battery_charger.ko ${home}/_vendor_dlkm_modules/qti_battery_charger.ko
 	fi
 	rm -f ${extract_vendor_dlkm_modules_dir}/*
-	cp ${home}/_vendor_dlkm_modules/* ${extract_vendor_dlkm_modules_dir}/
+	cp ${home}/_vendor_dlkm_modules/* ${extract_vendor_dlkm_modules_dir}/ || \
+		abort "! Failed to update modules! No enough free space?"
 	cp ${home}/vertmp ${extract_vendor_dlkm_modules_dir}/vertmp
 	sync
 
