@@ -126,7 +126,7 @@ get_size() {
 	local _size
 
 	if [ -d "$_path" ]; then
-		echo $(du -bs $_path | awk '{print $1}')
+		du -bs $_path | awk '{print $1}'
 		return
 	fi
 	if [ -b "$_path" ]; then
@@ -135,7 +135,7 @@ get_size() {
 			return
 		}
 	fi
-	echo $(wc -c < $_path)
+	wc -c < $_path
 }
 
 bytes_to_mb() {
@@ -307,15 +307,15 @@ else
 			ui_print "- Trying to resize..."
 
 			${bin}/e2fsck -f -y ${home}/vendor_dlkm.img
-			vendor_dlkm_target_size_mb=$(echo $vendor_dlkm_need_size | awk '{printf "%d", ($1 / 1024 / 1024 + 1)}')
-			${bin}/resize2fs ${home}/vendor_dlkm.img "${vendor_dlkm_target_size_mb}M" || \
+			vendor_dlkm_resized_size=$(echo $vendor_dlkm_need_size | awk '{printf "%dM", ($1 / 1024 / 1024 + 1)}')
+			${bin}/resize2fs ${home}/vendor_dlkm.img $vendor_dlkm_resized_size || \
 				abort "! Failed to resize vendor_dlkm image!"
-			ui_print "- Resized vendor_dlkm.img size: ${vendor_dlkm_target_size_mb}M."
+			ui_print "- Resized vendor_dlkm.img size: ${vendor_dlkm_resized_size}."
 			# e2fsck again
 			${bin}/e2fsck -f -y ${home}/vendor_dlkm.img
 
 			do_check_super_device_size=true
-			unset vendor_dlkm_target_size_mb
+			unset vendor_dlkm_resized_size
 		else
 			ui_print "- /vendor_dlkm partition has sufficient space."
 		fi
