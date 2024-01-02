@@ -141,6 +141,10 @@ check_super_device_size() {
 		abort "! Super block device size mismatch!"
 }
 
+# Check firmware
+strings /dev/block/bootdevice/by-name/xbl_config${slot} | grep -q 'led_blink' && \
+	abort "Sorry, Melt Kernel is temporarily not compatible with HyperOS firmware!"
+
 # Check snapshot status
 # Technical details: https://blog.xzr.moe/archives/30/
 ${bin}/snapshotupdater_static dump &>/dev/null
