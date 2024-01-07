@@ -1,7 +1,11 @@
+#!/usr/bin/env python3
+# encoding: utf-8
+
 import os
 import sys
 import hashlib
 import shutil
+import subprocess
 import tempfile
 import time
 import zipfile
@@ -9,6 +13,9 @@ from functools import wraps
 from contextlib import contextmanager
 
 import bsdiff4
+
+assert sys.platform == "linux"
+assert subprocess.getstatusoutput("which 7za")[0] == 0
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PACKAGE_NAME_MULTI = "Melt-Kernel-marble-%s-multi.zip"
@@ -90,6 +97,12 @@ def make_zip(*include, exclude=()):
         raise
     return zip_path
 
+def make_7z(dir_, output_file):
+    with change_dir(dir_):
+        rc, text = subprocess.getstatusoutput("7za a -t7z -bd %s ./*" % os.path.abspath(output_file))
+    print(text)
+    assert rc == 0
+
 def main_multi(build_version):
     image_stock = local_path("Image")
     image_ksu = local_path("Image_ksu")
@@ -106,6 +119,10 @@ def main_multi(build_version):
 
     file2file(local_path("anykernel.sh"), local_path("anykernel.sh.BAK"), move=True)
     try:
+        print("Compressing _modules_miui.7z ...")
+        make_7z(local_path("_modules_miui"), local_path("_modules_miui.7z"))
+        print("Compressing _modules_hyperos.7z ...")
+        make_7z(local_path("_modules_hyperos"), local_path("_modules_hyperos.7z"))
         with change_dir(BASE_DIR):
             with open("anykernel.sh.BAK", "r", encoding='utf-8') as f1:
                 with open("anykernel.sh", "w", encoding='utf-8', newline='\n') as f2:
@@ -114,11 +131,13 @@ def main_multi(build_version):
                     )
             print("Making zip package...")
             zip_file = make_zip(
-                "META-INF", "tools", "_vendor_boot_modules", "_vendor_dlkm_modules", "bs_patches",
+                "META-INF", "tools", "_modules_miui.7z", "_modules_hyperos.7z", "bs_patches",
                 "anykernel.sh", "_restore_anykernel.sh", "Image", "LICENSE", "banner",
             )
     finally:
         remove_path(local_path("anykernel.sh"))
+        remove_path(local_path("_modules_miui.7z"))
+        remove_path(local_path("_modules_hyperos.7z"))
         file2file(local_path("anykernel.sh.BAK"), local_path("anykernel.sh"), move=True)
     dst_zip_file = local_path(PACKAGE_NAME_MULTI % build_version)
     file2file(zip_file, dst_zip_file, move=True)

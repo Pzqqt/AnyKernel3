@@ -158,8 +158,14 @@ check_super_device_size() {
 }
 
 # Check firmware
-strings /dev/block/bootdevice/by-name/xbl_config${slot} | grep -q 'led_blink' && \
-	abort "Sorry, Melt Kernel is temporarily not compatible with HyperOS firmware!"
+if strings /dev/block/bootdevice/by-name/xbl_config${slot} | grep -q 'led_blink'; then
+	ui_print "- HyperOS firmware detected!"
+	modules_pkg=${home}/_modules_hyperos.7z
+else
+	ui_print "- MIUI14 firmware detected!"
+	modules_pkg=${home}/_modules_miui.7z
+fi
+[ -f $modules_pkg ] || abort "! Cannot found ${modules_pkg}!"
 
 # Check snapshot status
 # Technical details: https://blog.xzr.moe/archives/30/
@@ -237,6 +243,12 @@ export magisk_patched
 
 # Fix unable to mount image as read-write in recovery
 $BOOTMODE || setenforce 0
+
+ui_print " "
+ui_print "- Unpacking kernel modules..."
+${bin}/7za x $modules_pkg -o${home}/ || abort "! Failed to unpack ${modules_pkg}!"
+[ -d ${home}/_vendor_boot_modules ] && [ -d ${home}/_vendor_dlkm_modules ] || abort "! Failed to unpack ${modules_pkg}!"
+unset modules_pkg
 
 ui_print " "
 if $skip_update_flag; then
