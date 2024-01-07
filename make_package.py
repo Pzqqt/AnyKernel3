@@ -19,7 +19,6 @@ assert subprocess.getstatusoutput("which 7za")[0] == 0
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PACKAGE_NAME_MULTI = "Melt-Kernel-marble-%s-multi.zip"
-PACKAGE_NAME_SINGLE = "Melt-Kernel-marble-%s.zip"
 
 def timeit(func):
     @wraps(func)
@@ -143,25 +142,7 @@ def main_multi(build_version):
     file2file(zip_file, dst_zip_file, move=True)
     print("\nDone! Output file:", dst_zip_file)
 
-def make_single(build_version):
-    assert os.path.exists(local_path("Image"))
-
-    with change_dir(BASE_DIR):
-        print("Making zip package...")
-        zip_file = make_zip(
-            "META-INF", "tools", "_vendor_boot_modules", "_vendor_dlkm_modules",
-            ("anykernel-single.sh", "anykernel.sh"), "_restore_anykernel.sh", "Image", "LICENSE", "banner",
-            exclude=("bspatch",),
-        )
-    dst_zip_file = local_path(PACKAGE_NAME_SINGLE % build_version)
-    file2file(zip_file, dst_zip_file, move=True)
-    print("\nDone! Output file:", dst_zip_file)
-
 if __name__ == "__main__":
     if len(sys.argv) == 2:
-        if sys.argv[1] != "-s":
-            sys.exit(main_multi(sys.argv[1]))
-    elif len(sys.argv) == 3:
-        if sys.argv[1] == "-s":
-            sys.exit(make_single(sys.argv[2]))
+        sys.exit(main_multi(sys.argv[1]))
     print('Usage: %s [-s] build_version' % sys.argv[0])
