@@ -14,6 +14,9 @@ from contextlib import contextmanager
 
 import bsdiff4
 
+from depmod_regen import main as do_depmod_regen
+
+
 assert sys.platform == "linux"
 assert subprocess.getstatusoutput("which 7za")[0] == 0
 
@@ -116,6 +119,11 @@ def main_multi(build_version):
     print("Generating patch file...")
     bsdiff4_file_diff(image_stock, image_ksu, local_path("bs_patches", "ksu.p"))
 
+    print("Regenerating module dependency information...")
+    for d in ("_modules_miui", "_modules_hyperos"):
+        assert do_depmod_regen(local_path(d, "_vendor_boot_modules"), "/lib/modules/") == 0
+        assert do_depmod_regen(local_path(d, "_vendor_dlkm_modules"), "/vendor/lib/modules/") == 0
+
     file2file(local_path("anykernel.sh"), local_path("anykernel.sh.BAK"), move=True)
     try:
         print("Compressing _modules_miui.7z ...")
@@ -144,5 +152,6 @@ def main_multi(build_version):
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
-        sys.exit(main_multi(sys.argv[1]))
-    print('Usage: %s [-s] build_version' % sys.argv[0])
+        main_multi(sys.argv[1])
+    else:
+        print('Usage: %s [-s] build_version' % sys.argv[0])
