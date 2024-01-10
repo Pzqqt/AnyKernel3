@@ -71,6 +71,13 @@ def remove_path(path):
         os.remove(path)
 
 def make_zip(*include, exclude=()):
+
+    def _skip_compress(file_name):
+        for file_type in ('.7z', '.p'):
+            if file_name.endswith(file_type):
+                return True
+        return False
+
     zip_path = tempfile.mktemp(".zip")
     try:
         with zipfile.ZipFile(zip_path, "w") as zip_:
@@ -89,9 +96,18 @@ def make_zip(*include, exclude=()):
                     for root, dirs, files in os.walk(item):
                         for f in files:
                             if f not in exclude:
-                                zip_.write(os.path.join(root, f), compress_type=zipfile.ZIP_DEFLATED)
+                                zip_.write(
+                                    os.path.join(root, f),
+                                    compress_type=zipfile.ZIP_DEFLATED,
+                                    compresslevel=0 if _skip_compress(f) else 9,
+                                )
                 elif os.path.isfile(item):
-                    zip_.write(item, arcname=arc_name, compress_type=zipfile.ZIP_DEFLATED)
+                    zip_.write(
+                        item,
+                        arcname=arc_name,
+                        compress_type=zipfile.ZIP_DEFLATED,
+                        compresslevel=0 if _skip_compress(item) else 9,
+                    )
                 else:
                     raise Exception("Unknown file: " + item)
     except:
