@@ -290,6 +290,14 @@ else
 			rm ${home}/vendor_boot.img
 			touch ${home}/do_backup_flag
 
+			if ! $BOOTMODE && [ ! -d /twres ]; then
+				ui_print "======================================================================"
+				ui_print "! Warning: Please transfer the backup file you just generated"
+				ui_print "! to another device via ADB, as it will be lost after reboot!"
+				ui_print "======================================================================"
+				sleep 3
+			fi
+
 			unset build_prop backup_package
 		}
 	fi
