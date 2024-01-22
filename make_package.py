@@ -115,9 +115,14 @@ def make_zip(*include, exclude=()):
         raise
     return zip_path
 
-def make_7z(dir_, output_file):
-    with change_dir(dir_):
-        rc, text = subprocess.getstatusoutput("7za a -t7z -bd %s ./*" % os.path.abspath(output_file))
+def make_7z(path_, output_file):
+    if os.path.isdir(path_):
+        with change_dir(path_):
+            rc, text = subprocess.getstatusoutput("7za a -t7z -bd %s ./*" % os.path.abspath(output_file))
+    else:
+        dirname, basename = os.path.split(path_)
+        with change_dir(dirname):
+            rc, text = subprocess.getstatusoutput("7za a -t7z -bd %s ./%s" % (os.path.abspath(output_file), basename))
     print(text)
     assert rc == 0
 
@@ -142,6 +147,8 @@ def main_multi(build_version):
 
     file2file(local_path("anykernel.sh"), local_path("anykernel.sh.BAK"), move=True)
     try:
+        print("Compressing Image.7z ...")
+        make_7z(local_path("Image"), local_path("Image.7z"))
         print("Compressing _modules_miui.7z ...")
         make_7z(local_path("_modules_miui"), local_path("_modules_miui.7z"))
         print("Compressing _modules_hyperos.7z ...")
@@ -155,12 +162,13 @@ def main_multi(build_version):
             print("Making zip package...")
             zip_file = make_zip(
                 "META-INF", "tools", "_modules_miui.7z", "_modules_hyperos.7z", "bs_patches",
-                "anykernel.sh", "_restore_anykernel.sh", "Image", "LICENSE", "banner",
+                "anykernel.sh", "_restore_anykernel.sh", "Image.7z", "LICENSE", "banner",
             )
     finally:
         remove_path(local_path("anykernel.sh"))
         remove_path(local_path("_modules_miui.7z"))
         remove_path(local_path("_modules_hyperos.7z"))
+        remove_path(local_path("Image.7z"))
         file2file(local_path("anykernel.sh.BAK"), local_path("anykernel.sh"), move=True)
     dst_zip_file = local_path(PACKAGE_NAME_MULTI % build_version)
     file2file(zip_file, dst_zip_file, move=True)
