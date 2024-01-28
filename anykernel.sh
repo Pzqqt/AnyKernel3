@@ -46,21 +46,22 @@ extract_erofs() {
 	local img_file=$1
 	local out_dir=$2
 
-	${bin}/extract.erofs -i $img_file -x -T8 -o $out_dir &> /dev/null
+	${bin}/extract.erofs -i "$img_file" -x -T8 -o "$out_dir" &> /dev/null
 }
 
 mkfs_erofs() {
 	local work_dir=$1
 	local out_file=$2
+	local partition_name
 
-	local partition_name=$(basename $work_dir)
+	partition_name=$(basename "$work_dir")
 
 	${bin}/mkfs.erofs \
-		--mount-point /${partition_name} \
-		--fs-config-file ${work_dir}/../config/${partition_name}_fs_config \
-		--file-contexts  ${work_dir}/../config/${partition_name}_file_contexts \
+		--mount-point "/${partition_name}" \
+		--fs-config-file "${work_dir}/../config/${partition_name}_fs_config" \
+		--file-contexts  "${work_dir}/../config/${partition_name}_file_contexts" \
 		-z lz4hc \
-		$out_file $work_dir
+		"$out_file" "$work_dir"
 }
 
 is_mounted() { mount | grep -q " $1 "; }
@@ -73,8 +74,9 @@ apply_patch() {
 	local src_sha1=$2
 	local dst_sha1=$3
 	local bs_patch=$4
+	local file_sha1
 
-	local file_sha1=$(sha1 $src_path)
+	file_sha1=$(sha1 $src_path)
 	[ "$file_sha1" == "$dst_sha1" ] && return 0
 	[ "$file_sha1" == "$src_sha1" ] && ${bin}/bspatch "$src_path" "$src_path" "$bs_patch"
 	[ "$(sha1 $src_path)" == "$dst_sha1" ] || abort "! Failed to patch $src_path!"
@@ -159,10 +161,10 @@ check_super_device_size() {
 
 # Check firmware
 if strings /dev/block/bootdevice/by-name/xbl_config${slot} | grep -q 'led_blink'; then
-	ui_print "- HyperOS firmware detected!"
+	ui_print "HyperOS firmware detected!"
 	modules_pkg=${home}/_modules_hyperos.7z
 else
-	ui_print "- MIUI14 firmware detected!"
+	ui_print "MIUI14 firmware detected!"
 	modules_pkg=${home}/_modules_miui.7z
 fi
 [ -f $modules_pkg ] || abort "! Cannot found ${modules_pkg}!"
@@ -172,6 +174,7 @@ fi
 ${bin}/snapshotupdater_static dump &>/dev/null
 rc=$?
 if [ "$rc" != 0 ]; then
+	ui_print " "
 	ui_print "Cannot get snapshot status via snapshotupdater_static! rc=$rc."
 	if $BOOTMODE; then
 		ui_print "If you are installing the kernel in an app, try using another app."
@@ -225,8 +228,7 @@ fi
 [ -f ${home}/Image.7z ] || abort "! Cannot found ${home}/Image.7z!"
 ui_print " "
 ui_print "- Unpacking kernel image..."
-${bin}/7za x ${home}/Image.7z -o${home}/ || abort "! Failed to unpack ${home}/Image.7z!"
-[ -f ${home}/Image ] || abort "! Failed to unpack ${home}/Image.7z!"
+${bin}/7za x ${home}/Image.7z -o${home}/ && [ -f ${home}/Image ] || abort "! Failed to unpack ${home}/Image.7z!"
 rm ${home}/Image.7z
 
 # KernelSU
@@ -253,8 +255,8 @@ $BOOTMODE || setenforce 0
 
 ui_print " "
 ui_print "- Unpacking kernel modules..."
-${bin}/7za x $modules_pkg -o${home}/ || abort "! Failed to unpack ${modules_pkg}!"
-[ -d ${home}/_vendor_boot_modules ] && [ -d ${home}/_vendor_dlkm_modules ] || abort "! Failed to unpack ${modules_pkg}!"
+${bin}/7za x $modules_pkg -o${home}/ && [ -d ${home}/_vendor_boot_modules ] && [ -d ${home}/_vendor_dlkm_modules ] || \
+	abort "! Failed to unpack ${modules_pkg}!"
 unset modules_pkg
 
 ui_print " "
@@ -302,6 +304,7 @@ else
 				ui_print "! Warning: Please transfer the backup file you just generated"
 				ui_print "! to another device via ADB, as it will be lost after reboot!"
 				ui_print "======================================================================"
+				ui_print " "
 				sleep 3
 			fi
 
@@ -376,8 +379,8 @@ else
 		chcon u:object_r:vendor_file:s0 ${extract_vendor_dlkm_modules_dir}/*
 		umount $extract_vendor_dlkm_dir
 	else
-		for f in $(ls -1 $extract_vendor_dlkm_modules_dir); do
-			echo "vendor_dlkm/lib/modules/$f 0 0 0644" >> ${extract_vendor_dlkm_dir}/config/vendor_dlkm_fs_config
+		for f in "${extract_vendor_dlkm_modules_dir}"/*; do
+			echo "vendor_dlkm/lib/modules/$(basename $f) 0 0 0644" >> ${extract_vendor_dlkm_dir}/config/vendor_dlkm_fs_config
 		done
 		echo '/vendor_dlkm/lib/modules/.+ u:object_r:vendor_file:s0' >> ${extract_vendor_dlkm_dir}/config/vendor_dlkm_file_contexts
 		ui_print "- Repacking /vendor_dlkm image..."
