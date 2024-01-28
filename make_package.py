@@ -13,6 +13,7 @@ from functools import wraps
 from contextlib import contextmanager
 
 import bsdiff4
+import rich
 
 from depmod_regen import main as do_depmod_regen
 
@@ -133,33 +134,39 @@ def main_multi(build_version):
     assert os.path.exists(image_stock)
     assert os.path.exists(image_ksu)
 
+    rich.print("[yellow][1/7][/yellow] [green]Generating SHA1 for image files...[/green]")
     sha1_image_stock = get_sha1(image_stock)
     sha1_image_ksu = get_sha1(image_ksu)
+    print("SHA1 for Image    :", sha1_image_stock)
+    print("SHA1 for Image_ksu:", sha1_image_ksu)
 
+    rich.print("[yellow][2/7][/yellow] [green]Generating patch file...[/green]")
     remove_path(local_path("bs_patches", "ksu.p"))
-    print("Generating patch file...")
     bsdiff4_file_diff(image_stock, image_ksu, local_path("bs_patches", "ksu.p"))
 
-    print("Regenerating module dependency information...")
+    rich.print("[yellow][3/7][/yellow] [green]Regenerating module dependency information...[/green]")
     for d in ("_modules_miui", "_modules_hyperos"):
         assert do_depmod_regen(local_path(d, "_vendor_boot_modules"), "/lib/modules/") == 0
         assert do_depmod_regen(local_path(d, "_vendor_dlkm_modules"), "/vendor/lib/modules/") == 0
 
     file2file(local_path("anykernel.sh"), local_path("anykernel.sh.BAK"), move=True)
     try:
-        print("Compressing Image.7z ...")
+        rich.print("[yellow][4/7][/yellow] [green]Compressing Image.7z ...[/green]")
         make_7z(local_path("Image"), local_path("Image.7z"))
-        print("Compressing _modules_miui.7z ...")
+
+        rich.print("[yellow][5/7][/yellow] [green]Compressing _modules_miui.7z ...[/green]")
         make_7z(local_path("_modules_miui"), local_path("_modules_miui.7z"))
-        print("Compressing _modules_hyperos.7z ...")
+
+        rich.print("[yellow][6/7][/yellow] [green]Compressing _modules_hyperos.7z ...[/green]")
         make_7z(local_path("_modules_hyperos"), local_path("_modules_hyperos.7z"))
+
+        rich.print("[yellow][7/7][/yellow] [green]Making zip package...[/green]")
         with change_dir(BASE_DIR):
             with open("anykernel.sh.BAK", "r", encoding='utf-8') as f1:
                 with open("anykernel.sh", "w", encoding='utf-8', newline='\n') as f2:
                     f2.write(
                         f1.read().replace("@SHA1_STOCK@", sha1_image_stock).replace("@SHA1_KSU@", sha1_image_ksu)
                     )
-            print("Making zip package...")
             zip_file = make_zip(
                 "META-INF", "tools", "_modules_miui.7z", "_modules_hyperos.7z", "bs_patches",
                 "anykernel.sh", "_restore_anykernel.sh", "Image.7z", "LICENSE", "banner",
@@ -172,7 +179,9 @@ def main_multi(build_version):
         file2file(local_path("anykernel.sh.BAK"), local_path("anykernel.sh"), move=True)
     dst_zip_file = local_path(PACKAGE_NAME_MULTI % build_version)
     file2file(zip_file, dst_zip_file, move=True)
-    print("\nDone! Output file:", dst_zip_file)
+
+    print(" ")
+    rich.print("[green]Done! Output file: %s[/green]" % dst_zip_file)
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
