@@ -202,6 +202,12 @@ if [ "$snapshot_status" != "none" ]; then
 fi
 unset rc snapshot_status
 
+[ -f ${home}/Image.7z ] || abort "! Cannot found ${home}/Image.7z!"
+ui_print " "
+ui_print "- Unpacking kernel image..."
+${bin}/7za x ${home}/Image.7z -o${home}/ && [ -f ${home}/Image ] || abort "! Failed to unpack ${home}/Image.7z!"
+rm ${home}/Image.7z
+
 # Check vendor_dlkm partition status
 [ -d /vendor_dlkm ] || mkdir /vendor_dlkm
 is_mounted /vendor_dlkm || \
@@ -224,12 +230,6 @@ if $skip_update_flag; then
 		*-force) skip_update_flag=false;;
 	esac
 fi
-
-[ -f ${home}/Image.7z ] || abort "! Cannot found ${home}/Image.7z!"
-ui_print " "
-ui_print "- Unpacking kernel image..."
-${bin}/7za x ${home}/Image.7z -o${home}/ && [ -f ${home}/Image ] || abort "! Failed to unpack ${home}/Image.7z!"
-rm ${home}/Image.7z
 
 # KernelSU
 [ -f ${split_img}/ramdisk.cpio ] || abort "! Cannot found ramdisk.cpio!"
