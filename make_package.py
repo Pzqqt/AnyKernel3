@@ -22,7 +22,7 @@ assert sys.platform == "linux"
 assert subprocess.getstatusoutput("which 7za")[0] == 0
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PACKAGE_NAME_MULTI = "Melt-Kernel-marble-%s-multi.zip"
+PACKAGE_NAME_MULTI = "Melt-marble-%s-multi.zip"
 
 def timeit(func):
     @wraps(func)
