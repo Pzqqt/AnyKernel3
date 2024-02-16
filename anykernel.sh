@@ -216,20 +216,11 @@ is_mounted /vendor_dlkm || \
 
 strings ${home}/Image 2>/dev/null | grep -E -m1 'Linux version.*#' > ${home}/vertmp
 
-skip_update_flag=false
 do_backup_flag=false
-if [ -f /vendor_dlkm/lib/modules/vertmp ]; then
-	[ "$(cat /vendor_dlkm/lib/modules/vertmp)" == "$(cat ${home}/vertmp)" ] && skip_update_flag=true
-else
+if [ ! -f /vendor_dlkm/lib/modules/vertmp ]; then
 	do_backup_flag=true
 fi
 umount /vendor_dlkm
-
-if $skip_update_flag; then
-	case $(basename "$ZIPFILE" .zip) in
-		*-force) skip_update_flag=false;;
-	esac
-fi
 
 # KernelSU
 [ -f ${split_img}/ramdisk.cpio ] || abort "! Cannot found ramdisk.cpio!"
@@ -260,9 +251,7 @@ ${bin}/7za x $modules_pkg -o${home}/ && [ -d ${home}/_vendor_boot_modules ] && [
 unset modules_pkg
 
 ui_print " "
-if $skip_update_flag; then
-	ui_print "- No need to update /vendor_dlkm partition."
-else
+if true; then  # I don't want to adjust the indentation of the code block below, so leave it as is.
 	do_check_super_device_size=false
 
 	# Dump vendor_dlkm partition image
@@ -408,7 +397,7 @@ else
 	unset do_check_super_device_size vendor_dlkm_block_size vendor_dlkm_is_ext4 extract_vendor_dlkm_dir extract_vendor_dlkm_modules_dir
 fi
 
-unset no_needed_kos skip_update_flag do_backup_flag
+unset no_needed_kos do_backup_flag
 
 write_boot # use flash_boot to skip ramdisk repack, e.g. for devices with init_boot ramdisk
 
