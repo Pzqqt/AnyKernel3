@@ -103,11 +103,13 @@ get_keycheck_result() {
 }
 
 keycode_select() {
-	local prompt_text=$1
 	local r_keycode
 
 	ui_print " "
-	ui_print "# $prompt_text"
+	while [ $# != 0 ]; do
+		ui_print "# $1"
+		shift
+	done
 	ui_print "#"
 	ui_print "# Vol+ = Yes, Vol- = No."
 	ui_print "# Please press the key..."
