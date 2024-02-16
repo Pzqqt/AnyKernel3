@@ -164,12 +164,11 @@ check_super_device_size() {
 # Check firmware
 if strings /dev/block/bootdevice/by-name/xbl_config${slot} | grep -q 'led_blink'; then
 	ui_print "HyperOS firmware detected!"
-	modules_pkg=${home}/_modules_hyperos.7z
+	is_hyperos_fw=true
 else
 	ui_print "MIUI14 firmware detected!"
-	modules_pkg=${home}/_modules_miui.7z
+	is_hyperos_fw=false
 fi
-[ -f $modules_pkg ] || abort "! Cannot found ${modules_pkg}!"
 
 # Check snapshot status
 # Technical details: https://blog.xzr.moe/archives/30/
@@ -222,6 +221,10 @@ do_backup_flag=false
 if [ ! -f /vendor_dlkm/lib/modules/vertmp ]; then
 	do_backup_flag=true
 fi
+do_fix_battery_usage=false
+if [ "$(sha1 /vendor_dlkm/lib/modules/qti_battery_charger.ko)" == "b5aa013e06e545df50030ec7b03216f41306f4d4" ]; then
+	do_fix_battery_usage=true
+fi
 umount /vendor_dlkm
 
 # KernelSU
@@ -248,6 +251,12 @@ $BOOTMODE || setenforce 0
 
 ui_print " "
 ui_print "- Unpacking kernel modules..."
+if $is_hyperos_fw; then
+	modules_pkg=${home}/_modules_hyperos.7z
+else
+	modules_pkg=${home}/_modules_miui.7z
+fi
+[ -f $modules_pkg ] || abort "! Cannot found ${modules_pkg}!"
 ${bin}/7za x $modules_pkg -o${home}/ && [ -d ${home}/_vendor_boot_modules ] && [ -d ${home}/_vendor_dlkm_modules ] || \
 	abort "! Failed to unpack ${modules_pkg}!"
 unset modules_pkg
@@ -265,6 +274,46 @@ if keycode_select \
 else
 	patch_cmdline "goodix_core.force_high_report_rate" ""
 fi
+
+# qti_battery_charger.ko / qti_battery_charger_main.ko
+if $is_hyperos_fw; then
+	modname_qti_battery_charger=qti_battery_charger_main
+else
+	modname_qti_battery_charger=qti_battery_charger
+fi
+
+if keycode_select \
+    "Make device show more realistic battery percentage?" \
+    " " \
+    "Note:" \
+    "This will sometimes make it difficult to charge" \
+    "the device to 100%."; then
+	patch_cmdline "${modname_qti_battery_charger}.report_real_capacity" "${modname_qti_battery_charger}.report_real_capacity=y"
+else
+	patch_cmdline "${modname_qti_battery_charger}.report_real_capacity" ""
+fi
+
+skip_option_fix_battery_usage=false
+[ -f /system/framework/MiuiBooster.jar ] && skip_option_fix_battery_usage=true
+cat /system/build.prop | grep -qi 'aospa' && skip_option_fix_battery_usage=true
+if ! $do_fix_battery_usage && ! $skip_option_fix_battery_usage; then
+	if keycode_select \
+	    "Fix battery usage issue with AOSP rom?" \
+	    " " \
+	    "Note:" \
+	    "Select Yes if you are using AOSP rom and find" \
+	    "abnormal battery usage data in the system." \
+	    "Select No if you are using MIUI/HyperOS/AOSPA rom."; then
+		do_fix_battery_usage=true
+	fi
+fi
+if $do_fix_battery_usage; then
+	patch_cmdline "${modname_qti_battery_charger}.fix_battery_usage" "${modname_qti_battery_charger}.fix_battery_usage=y"
+else
+	patch_cmdline "${modname_qti_battery_charger}.fix_battery_usage" ""
+fi
+
+unset modname_qti_battery_charger skip_option_fix_battery_usage
 
 ui_print " "
 if true; then  # I don't want to adjust the indentation of the code block below, so leave it as is.
@@ -370,9 +419,6 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 	fi
 
 	ui_print "- Updating /vendor_dlkm image..."
-	if [ "$(sha1 ${extract_vendor_dlkm_modules_dir}/qti_battery_charger.ko)" == "b5aa013e06e545df50030ec7b03216f41306f4d4" ]; then
-		cp -f ${extract_vendor_dlkm_modules_dir}/qti_battery_charger.ko ${home}/_vendor_dlkm_modules/qti_battery_charger.ko
-	fi
 	rm -f ${extract_vendor_dlkm_modules_dir}/*
 	cp ${home}/_vendor_dlkm_modules/* ${extract_vendor_dlkm_modules_dir}/ || \
 		abort "! Failed to update modules! No enough free space?"
@@ -454,6 +500,8 @@ set_perm 0 0 0644 ${vendor_boot_modules_dir}/*
 write_boot # use flash_boot to skip ramdisk repack, e.g. for devices with init_boot ramdisk
 
 ########## FLASH VENDOR_BOOT END ##########
+
+unset is_hyperos_fw
 
 # Patch vbmeta
 ui_print " "
