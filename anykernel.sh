@@ -252,6 +252,20 @@ ${bin}/7za x $modules_pkg -o${home}/ && [ -d ${home}/_vendor_boot_modules ] && [
 	abort "! Failed to unpack ${modules_pkg}!"
 unset modules_pkg
 
+# goodix_core.ko
+if keycode_select \
+    "Always enable 360HZ touch sampling rate?" \
+    " " \
+    "Note:" \
+    "Always enabling 360HZ will NOT improve the daily" \
+    "use experience and increase power consumption." \
+    "If you regret it, you can install this kernel again" \
+    "and choose No at this step."; then
+	patch_cmdline "goodix_core.force_high_report_rate" "goodix_core.force_high_report_rate=y"
+else
+	patch_cmdline "goodix_core.force_high_report_rate" ""
+fi
+
 ui_print " "
 if true; then  # I don't want to adjust the indentation of the code block below, so leave it as is.
 	do_check_super_device_size=false
