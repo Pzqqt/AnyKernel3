@@ -330,9 +330,7 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 		keycode_select "Backup the current kernel?" && {
 			ui_print "- Backing up kernel, vendor_boot, and vendor_dlkm partition..."
 
-			build_prop=/system/build.prop
-			[ -d /system_root/system ] && build_prop=/system_root/$build_prop
-			backup_package=/sdcard/Melt-restore-kernel-$(file_getprop $build_prop ro.build.version.incremental)-$(date +"%Y%m%d-%H%M%S").zip
+			backup_package=/sdcard/Melt-restore-kernel-$(file_getprop /system/build.prop ro.build.version.incremental)-$(date +"%Y%m%d-%H%M%S").zip
 
 			dd if=/dev/block/bootdevice/by-name/vendor_boot${slot} of=${home}/vendor_boot.img
 
@@ -362,7 +360,7 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 				sleep 3
 			fi
 
-			unset build_prop backup_package
+			unset backup_package
 		}
 	fi
 
@@ -459,7 +457,7 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 	unset do_check_super_device_size vendor_dlkm_block_size vendor_dlkm_is_ext4 extract_vendor_dlkm_dir extract_vendor_dlkm_modules_dir
 fi
 
-unset no_needed_kos do_backup_flag
+unset do_backup_flag
 
 write_boot # use flash_boot to skip ramdisk repack, e.g. for devices with init_boot ramdisk
 
