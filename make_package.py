@@ -116,14 +116,19 @@ def make_zip(*include, exclude=()):
         raise
     return zip_path
 
+@timeit
 def make_7z(path_, output_file):
     if os.path.isdir(path_):
         with change_dir(path_):
-            rc, text = subprocess.getstatusoutput("7za a -t7z -bd %s ./*" % os.path.abspath(output_file))
+            rc, text = subprocess.getstatusoutput(
+                '7za a -t7z -mx=9 -bd "%s" "./*"' % (os.path.abspath(output_file))
+            )
     else:
         dirname, basename = os.path.split(path_)
         with change_dir(dirname):
-            rc, text = subprocess.getstatusoutput("7za a -t7z -bd %s ./%s" % (os.path.abspath(output_file), basename))
+            rc, text = subprocess.getstatusoutput(
+                '7za a -t7z -mx=9 -bd "%s" "./%s"' % (os.path.abspath(output_file), basename)
+            )
     print(text)
     assert rc == 0
 
