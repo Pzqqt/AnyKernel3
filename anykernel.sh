@@ -261,6 +261,18 @@ ${bin}/7za x $modules_pkg -o${home}/ && [ -d ${home}/_vendor_boot_modules ] && [
 	abort "! Failed to unpack ${modules_pkg}!"
 unset modules_pkg
 
+vendor_dlkm_modules_options_file=${home}/_vendor_dlkm_modules/modules.options
+[ -f $vendor_dlkm_modules_options_file ] || touch $vendor_dlkm_modules_options_file
+
+# Clean up the residue of Melt
+if [ -n "$(grep '^cmdline=' ${split_img}/header | cut -d= -f2-)" ]; then
+	patch_cmdline "goodix_core.force_high_report_rate" ""
+	patch_cmdline "qti_battery_charger.report_real_capacity" ""
+	patch_cmdline "qti_battery_charger.fix_battery_usage" ""
+	patch_cmdline "qti_battery_charger_main.report_real_capacity" ""
+	patch_cmdline "qti_battery_charger_main.fix_battery_usage" ""
+fi
+
 # goodix_core.ko
 if keycode_select \
     "Always enable 360HZ touch sampling rate?" \
@@ -270,9 +282,7 @@ if keycode_select \
     "use experience and increase power consumption." \
     "If you regret it, you can install this kernel again" \
     "and choose No at this step."; then
-	patch_cmdline "goodix_core.force_high_report_rate" "goodix_core.force_high_report_rate=y"
-else
-	patch_cmdline "goodix_core.force_high_report_rate" ""
+	echo "options goodix_core force_high_report_rate=y" >> $vendor_dlkm_modules_options_file
 fi
 
 # qti_battery_charger.ko / qti_battery_charger_main.ko
@@ -282,15 +292,14 @@ else
 	modname_qti_battery_charger=qti_battery_charger
 fi
 
+qti_battery_charger_mod_options=""
 if keycode_select \
     "Make device show more realistic battery percentage?" \
     " " \
     "Note:" \
     "This will sometimes make it difficult to charge" \
     "the device to 100%."; then
-	patch_cmdline "${modname_qti_battery_charger}.report_real_capacity" "${modname_qti_battery_charger}.report_real_capacity=y"
-else
-	patch_cmdline "${modname_qti_battery_charger}.report_real_capacity" ""
+	qti_battery_charger_mod_options="${qti_battery_charger_mod_options} report_real_capacity=y"
 fi
 
 skip_option_fix_battery_usage=false
@@ -308,12 +317,14 @@ if ! $do_fix_battery_usage && ! $skip_option_fix_battery_usage; then
 	fi
 fi
 if $do_fix_battery_usage; then
-	patch_cmdline "${modname_qti_battery_charger}.fix_battery_usage" "${modname_qti_battery_charger}.fix_battery_usage=y"
-else
-	patch_cmdline "${modname_qti_battery_charger}.fix_battery_usage" ""
+	qti_battery_charger_mod_options="${qti_battery_charger_mod_options} fix_battery_usage=y"
 fi
 
-unset modname_qti_battery_charger skip_option_fix_battery_usage
+if [ -n "${qti_battery_charger_mod_options}" ]; then
+	qti_battery_charger_mod_options=$(echo "$qti_battery_charger_mod_options" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+	echo "options ${modname_qti_battery_charger} ${qti_battery_charger_mod_options}" >> $vendor_dlkm_modules_options_file
+fi
+unset modname_qti_battery_charger skip_option_fix_battery_usage vendor_dlkm_modules_options_file qti_battery_charger_mod_options
 
 ui_print " "
 if true; then  # I don't want to adjust the indentation of the code block below, so leave it as is.
