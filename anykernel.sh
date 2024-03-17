@@ -208,6 +208,7 @@ ui_print " "
 ui_print "- Unpacking kernel image..."
 ${bin}/7za x ${home}/Image.7z -o${home}/ && [ -f ${home}/Image ] || abort "! Failed to unpack ${home}/Image.7z!"
 rm ${home}/Image.7z
+[ "$(sha1 ${home}/Image)" == "$SHA1_STOCK" ] || abort "! Kernel image is corrupted!"
 
 # Check vendor_dlkm partition status
 [ -d /vendor_dlkm ] || mkdir /vendor_dlkm
@@ -231,7 +232,15 @@ umount /vendor_dlkm
 [ -f ${split_img}/ramdisk.cpio ] || abort "! Cannot found ramdisk.cpio!"
 ${bin}/magiskboot cpio ${split_img}/ramdisk.cpio test
 magisk_patched=$?
-if keycode_select "Choose whether to install KernelSU support."; then
+if [ -f ${ramdisk}/kernelsu.ko ]; then
+	ui_print "- KernelSU LKM detected!"
+	ui_print "- Then you can only install Melt Kernel without KernelSU support!"
+	if [ $((magisk_patched & 3)) -eq 1 ]; then
+		ui_print "- Magisk detected!"
+		ui_print "- Oh brother, it's crazy!"
+		sleep 3
+	fi
+elif keycode_select "Choose whether to install KernelSU support."; then
 	if [ $((magisk_patched & 3)) -eq 1 ]; then
 		ui_print "- Magisk detected!"
 		ui_print "- We don't recommend using Magisk and KernelSU at the same time!"
@@ -241,8 +250,6 @@ if keycode_select "Choose whether to install KernelSU support."; then
 	fi
 	ui_print "- Patching Kernel image..."
 	apply_patch ${home}/Image "$SHA1_STOCK" "$SHA1_KSU" ${home}/bs_patches/ksu.p
-else
-	[ "$(sha1 ${home}/Image)" == "$SHA1_STOCK" ] || abort "! Kernel image is corrupted!"
 fi
 export magisk_patched
 
