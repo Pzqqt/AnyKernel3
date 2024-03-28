@@ -228,6 +228,9 @@ if [ "$(sha1 /vendor_dlkm/lib/modules/qti_battery_charger.ko)" == "b5aa013e06e54
 fi
 umount /vendor_dlkm
 
+is_miui_rom=false
+[ -f /system/framework/MiuiBooster.jar ] && is_miui_rom=true
+
 # KernelSU
 [ -f ${split_img}/ramdisk.cpio ] || abort "! Cannot found ramdisk.cpio!"
 ${bin}/magiskboot cpio ${split_img}/ramdisk.cpio test
@@ -310,8 +313,11 @@ if keycode_select \
 fi
 
 skip_option_fix_battery_usage=false
-[ -f /system/framework/MiuiBooster.jar ] && skip_option_fix_battery_usage=true
-cat /system/build.prop | grep -qi 'aospa' && skip_option_fix_battery_usage=true
+if $is_miui_rom; then
+	skip_option_fix_battery_usage=true
+else
+	cat /system/build.prop | grep -qi 'aospa' && skip_option_fix_battery_usage=true
+fi
 if ! $do_fix_battery_usage && ! $skip_option_fix_battery_usage; then
 	if keycode_select \
 	    "Fix battery usage issue with AOSP rom?" \
@@ -332,6 +338,13 @@ if [ -n "${qti_battery_charger_mod_options}" ]; then
 	echo "options ${modname_qti_battery_charger} ${qti_battery_charger_mod_options}" >> $vendor_dlkm_modules_options_file
 fi
 unset modname_qti_battery_charger skip_option_fix_battery_usage vendor_dlkm_modules_options_file qti_battery_charger_mod_options
+
+# Do not load millet related modules in AOSP rom
+if ! $is_miui_rom; then
+	for module_name in millet_core millet_binder millet_hs millet_oem_cgroup millet_pkg millet_sig; do
+		echo "blocklist $module_name" >> ${home}/_vendor_dlkm_modules/modules.blocklist
+	done
+fi
 
 ui_print " "
 if true; then  # I don't want to adjust the indentation of the code block below, so leave it as is.
@@ -517,7 +530,7 @@ write_boot # use flash_boot to skip ramdisk repack, e.g. for devices with init_b
 
 ########## FLASH VENDOR_BOOT END ##########
 
-unset is_hyperos_fw
+unset is_hyperos_fw is_miui_rom
 
 # Patch vbmeta
 ui_print " "
