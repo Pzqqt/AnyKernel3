@@ -337,6 +337,20 @@ if [ -n "${qti_battery_charger_mod_options}" ]; then
 	qti_battery_charger_mod_options=$(echo "$qti_battery_charger_mod_options" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 	echo "options ${modname_qti_battery_charger} ${qti_battery_charger_mod_options}" >> $vendor_dlkm_modules_options_file
 fi
+
+# Alternative wired headset buttons mode
+if ! $is_miui_rom; then
+	if keycode_select \
+	    "Use alternative wired headset buttons mode?" \
+	    " " \
+	    "Note:" \
+	    "Select Yes if you find that the volume buttons on" \
+	    "your wired headset are not working properly." \
+	    "Select No if you are using MIUI/HyperOS rom."; then
+		echo "options machine_dlkm waipio_wired_btn_altmode=y" >> $vendor_dlkm_modules_options_file
+	fi
+fi
+
 unset modname_qti_battery_charger skip_option_fix_battery_usage vendor_dlkm_modules_options_file qti_battery_charger_mod_options
 
 # Do not load millet related modules in AOSP rom
