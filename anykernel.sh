@@ -312,17 +312,6 @@ if keycode_select \
 	qti_battery_charger_mod_options="${qti_battery_charger_mod_options} report_real_capacity=y"
 fi
 
-disable_damon_reclaim=false
-if ! keycode_select \
-    "Enable DAMON-based Reclamation?" \
-    " " \
-    "Note:" \
-    "DAMON-based Reclamation helps save memory usage by" \
-    "consuming approximately <= 5% of performance." \
-    "Disabling it might save a little battery."; then
-	disable_damon_reclaim=true
-fi
-
 skip_option_fix_battery_usage=false
 if $is_miui_rom; then
 	skip_option_fix_battery_usage=true
@@ -544,17 +533,11 @@ rm ${vendor_boot_modules_dir}/*
 cp ${home}/_vendor_boot_modules/* ${vendor_boot_modules_dir}/
 set_perm 0 0 0644 ${vendor_boot_modules_dir}/*
 
-if ${disable_damon_reclaim}; then
-	patch_cmdline "damon_reclaim.enabled" "damon_reclaim.enabled=N"
-else
-	patch_cmdline "damon_reclaim.enabled" ""
-fi
-
 write_boot # use flash_boot to skip ramdisk repack, e.g. for devices with init_boot ramdisk
 
 ########## FLASH VENDOR_BOOT END ##########
 
-unset is_hyperos_fw is_miui_rom disable_damon_reclaim
+unset is_hyperos_fw is_miui_rom
 
 # Patch vbmeta
 ui_print " "
