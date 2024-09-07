@@ -71,7 +71,7 @@ def remove_path(path):
     elif os.path.isfile(path):
         os.remove(path)
 
-def make_zip(*include, exclude=()):
+def make_zip(*include):
 
     def _skip_compress(file_name):
         for file_type in ('.7z', '.p'):
@@ -83,29 +83,17 @@ def make_zip(*include, exclude=()):
     try:
         with zipfile.ZipFile(zip_path, "w") as zip_:
             for item in include:
-                if isinstance(item, (list, tuple)):
-                    if len(item) != 2:
-                        raise Exception("Unknown param: %s" % item)
-                    item, arc_name = item[:2]
-                    if os.path.isdir(item):
-                        raise Exception("`arcname` cannot be defined for directory: %s" % item)
-                elif isinstance(item, str):
-                    arc_name = None
-                else:
-                    raise Exception("Unknown param: %s" % item)
                 if os.path.isdir(item):
                     for root, dirs, files in os.walk(item):
                         for f in files:
-                            if f not in exclude:
-                                zip_.write(
-                                    os.path.join(root, f),
-                                    compress_type=zipfile.ZIP_DEFLATED,
-                                    compresslevel=0 if _skip_compress(f) else 9,
-                                )
+                            zip_.write(
+                                os.path.join(root, f),
+                                compress_type=zipfile.ZIP_DEFLATED,
+                                compresslevel=0 if _skip_compress(f) else 9,
+                            )
                 elif os.path.isfile(item):
                     zip_.write(
                         item,
-                        arcname=arc_name,
                         compress_type=zipfile.ZIP_DEFLATED,
                         compresslevel=0 if _skip_compress(item) else 9,
                     )
@@ -192,4 +180,4 @@ if __name__ == "__main__":
     if len(sys.argv) == 2:
         main_multi(sys.argv[1])
     else:
-        print('Usage: %s [-s] build_version' % sys.argv[0])
+        print('Usage: %s <build_version>' % sys.argv[0])
