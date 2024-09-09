@@ -211,6 +211,13 @@ m16t_touch_node=$(find /proc/device-tree/ | grep -E -m1 '/m16t-touch.*/compatibl
 }
 unset m16t_touch_node m16t_touch_prop
 
+# https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees/commit/393374ee4d02edbc27f3b6b57b965a7fbe87d33b
+use_oss_ir_spi_driver=false
+ir_spi_node=$(find /proc/device-tree/ | grep -E -m1 '/ir-spi.*/compatible$') && ir_spi_prop=$(cat "$ir_spi_node") && {
+	test "$ir_spi_prop" == "ir-spi-led" && use_oss_ir_spi_driver=true
+}
+unset ir_spi_node ir_spi_prop
+
 [ -f ${home}/Image.7z ] || abort "! Cannot found ${home}/Image.7z!"
 ui_print " "
 ui_print "- Unpacking kernel image..."
@@ -384,6 +391,18 @@ if ${is_hyperos_fw}; then
 
 	unset use_oss_msm_drm skip_option_oss_msm_drm
 fi
+
+# OSS ir-spi.ko
+if ${is_hyperos_fw} && ${use_oss_ir_spi_driver}; then
+	ui_print "- Replacing ir-spi.ko with OSS build..."
+	oss_ir_spi=${home}/_alt/OSS-ir-spi.ko
+	[ -f $oss_ir_spi ] || abort "! Cannot found ${oss_ir_spi}!"
+	cp $oss_ir_spi ${home}/_vendor_dlkm_modules/ir-spi.ko -f
+	sed -i 's/Cir-spi\ /Cir-spi-led\ /g'       ${home}/_vendor_dlkm_modules/modules.alias
+	sed -i 's/Cir-spiC\*\ /Cir-spi-ledC\*\ /g' ${home}/_vendor_dlkm_modules/modules.alias
+	unset oss_ir_spi
+fi
+unset use_oss_ir_spi_driver
 
 # Alternative wired headset buttons mode
 if ! $is_miui_rom; then
