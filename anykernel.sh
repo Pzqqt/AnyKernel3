@@ -203,6 +203,14 @@ if [ "$snapshot_status" != "none" ]; then
 fi
 unset rc snapshot_status
 
+# Check if it's new OSS dtbo
+# https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees/commit/f4dfb9210dc907b335441bfa78720773f679f841
+use_new_gt_driver=false
+m16t_touch_node=$(find /proc/device-tree/ | grep -E -m1 '/m16t-touch.*/compatible$') && m16t_touch_prop=$(cat "$m16t_touch_node") && {
+	test "$m16t_touch_prop" == "goodix,9916r-spi" || use_new_gt_driver=true
+}
+unset m16t_touch_node m16t_touch_prop
+
 [ -f ${home}/Image.7z ] || abort "! Cannot found ${home}/Image.7z!"
 ui_print " "
 ui_print "- Unpacking kernel image..."
@@ -283,7 +291,7 @@ if [ -n "$(grep '^cmdline=' ${split_img}/header | cut -d= -f2-)" ]; then
 	patch_cmdline "qti_battery_charger_main.fix_battery_usage" ""
 fi
 
-# goodix_core.ko
+# goodix_core.ko / goodix_core_los.ko
 if keycode_select \
     "Always enable 360HZ touch sampling rate?" \
     " " \
@@ -292,7 +300,11 @@ if keycode_select \
     "use experience and increase power consumption." \
     "If you regret it, you can install this kernel again" \
     "and choose No at this step."; then
-	echo "options goodix_core force_high_report_rate=y" >> $vendor_dlkm_modules_options_file
+	if ${use_new_gt_driver}; then
+		echo "options goodix_core_los force_high_report_rate=y" >> $vendor_dlkm_modules_options_file
+	else
+		echo "options goodix_core force_high_report_rate=y" >> $vendor_dlkm_modules_options_file
+	fi
 fi
 
 # qti_battery_charger.ko / qti_battery_charger_main.ko
@@ -359,6 +371,15 @@ if ! $is_miui_rom; then
 		echo "blocklist $module_name" >> ${home}/_vendor_dlkm_modules/modules.blocklist
 	done
 fi
+
+# Only load one of the two goodix touch screen drivers
+if ${use_new_gt_driver}; then
+	echo "blocklist goodix_core" >> ${home}/_vendor_dlkm_modules/modules.blocklist
+else
+	echo "blocklist goodix_core_los" >> ${home}/_vendor_dlkm_modules/modules.blocklist
+fi
+
+unset use_new_gt_driver
 
 ui_print " "
 if true; then  # I don't want to adjust the indentation of the code block below, so leave it as is.
