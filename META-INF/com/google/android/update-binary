@@ -12,7 +12,7 @@ export BOOTMODE;
 
 DIR=/sdcard;
 $BOOTMODE || DIR=$(dirname "$ZIPFILE");
-[ $DIR == "/sideload" ] && DIR=/tmp;
+[ "$DIR" == "/sideload" ] && DIR=/tmp;
 
 [ -d /postinstall/tmp ] && POSTINSTALL=/postinstall;
 [ "$AKHOME" ] || export AKHOME=$POSTINSTALL/tmp/anykernel;
