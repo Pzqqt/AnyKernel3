@@ -405,7 +405,15 @@ fi
 unset use_oss_ir_spi_driver
 
 # Alternative wired headset buttons mode
-if ! $is_miui_rom; then
+use_wired_btn_altmode=false
+skip_option_wired_btn_altmode=false
+if ${is_miui_rom}; then
+	skip_option_wired_btn_altmode=true
+elif ${is_oss_kernel_rom}; then
+	use_wired_btn_altmode=true
+	skip_option_wired_btn_altmode=true
+fi
+if ! ${skip_option_wired_btn_altmode}; then
 	if keycode_select \
 	    "Use alternative wired headset buttons mode?" \
 	    " " \
@@ -413,9 +421,13 @@ if ! $is_miui_rom; then
 	    "Select Yes if you find that the volume buttons on" \
 	    "your wired headset are not working properly." \
 	    "Select No if you are using MIUI/HyperOS rom."; then
-		echo "options machine_dlkm waipio_wired_btn_altmode=y" >> $vendor_dlkm_modules_options_file
+		use_wired_btn_altmode=true
 	fi
 fi
+if ${use_wired_btn_altmode}; then
+	echo "options machine_dlkm waipio_wired_btn_altmode=y" >> $vendor_dlkm_modules_options_file
+fi
+unset use_wired_btn_altmode skip_option_wired_btn_altmode
 
 unset vendor_dlkm_modules_options_file
 
