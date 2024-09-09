@@ -238,6 +238,8 @@ umount /vendor_dlkm
 
 is_miui_rom=false
 [ -f /system/framework/MiuiBooster.jar ] && is_miui_rom=true
+is_oss_kernel_rom=false
+[ -f /vendor/bin/sensor-notifier ] && is_oss_kernel_rom=true
 
 # KernelSU
 [ -f ${split_img}/ramdisk.cpio ] || abort "! Cannot found ramdisk.cpio!"
@@ -348,6 +350,35 @@ fi
 if [ -n "${qti_battery_charger_mod_options}" ]; then
 	qti_battery_charger_mod_options=$(echo "$qti_battery_charger_mod_options" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 	echo "options ${modname_qti_battery_charger} ${qti_battery_charger_mod_options}" >> $vendor_dlkm_modules_options_file
+fi
+
+# OSS msm_drm.ko
+if ${is_hyperos_fw}; then
+	use_oss_msm_drm=false
+	skip_option_oss_msm_drm=false
+
+	if ${is_oss_kernel_rom}; then
+		use_oss_msm_drm=true
+		skip_option_oss_msm_drm=true
+	fi
+	if ! ${skip_option_oss_msm_drm}; then
+		if keycode_select \
+		    "Using open source display drivers?" \
+		    " " \
+		    "Note:" \
+		    "Select No if you don't know what this means."; then
+			use_oss_msm_drm=true
+		fi
+	fi
+	if ${use_oss_msm_drm}; then
+		ui_print "- Replacing msm_drm.ko with OSS build..."
+		oss_msm_drm=${home}/_alt/OSS-msm_drm.ko
+		[ -f $oss_msm_drm ] || abort "! Cannot found ${oss_msm_drm}!"
+		cp $oss_msm_drm ${home}/_vendor_dlkm_modules/msm_drm.ko -f
+		unset oss_msm_drm
+	fi
+
+	unset use_oss_msm_drm skip_option_oss_msm_drm
 fi
 
 # Alternative wired headset buttons mode
@@ -558,7 +589,7 @@ write_boot # use flash_boot to skip ramdisk repack, e.g. for devices with init_b
 
 ########## FLASH VENDOR_BOOT END ##########
 
-unset is_hyperos_fw is_miui_rom
+unset is_hyperos_fw is_miui_rom is_oss_kernel_rom
 
 # Patch vbmeta
 ui_print " "
