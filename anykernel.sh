@@ -203,13 +203,6 @@ if [ "$snapshot_status" != "none" ]; then
 fi
 unset rc snapshot_status
 
-# Check if it's new OSS dtbo
-m16t_touch_node=$(find /proc/device-tree/ | grep -E -m1 'm16t-touch.*/compatible$') && \
-	m16t_touch_prop=$(cat "$m16t_touch_node") && \
-		test "$m16t_touch_prop" == "goodix,9916r-spi" || \
-			abort "Sorry! Melt Kernel does not seem to support your rom:/"
-unset m16t_touch_node m16t_touch_prop
-
 [ -f ${home}/Image.7z ] || abort "! Cannot found ${home}/Image.7z!"
 ui_print " "
 ui_print "- Unpacking kernel image..."
