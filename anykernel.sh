@@ -177,7 +177,7 @@ rc=$?
 if [ "$rc" != 0 ]; then
 	ui_print " "
 	ui_print "Cannot get snapshot status via snapshotupdater_static! rc=$rc."
-	if $BOOTMODE; then
+	if ${BOOTMODE}; then
 		ui_print "If you are installing the kernel in an app, try using another app."
 		ui_print "Recommend KernelFlasher:"
 		ui_print "  https://github.com/capntrips/KernelFlasher/releases"
@@ -202,6 +202,12 @@ if [ "$snapshot_status" != "none" ]; then
 	abort "Aborting..."
 fi
 unset rc snapshot_status
+
+# Check rom type
+is_miui_rom=false
+[ -f /system/framework/MiuiBooster.jar ] && is_miui_rom=true
+is_oss_kernel_rom=false
+[ -f /vendor/bin/sensor-notifier ] && is_oss_kernel_rom=true
 
 # Check if it's new OSS dtbo
 # https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees/commit/f4dfb9210dc907b335441bfa78720773f679f841
@@ -243,11 +249,6 @@ if [ "$(sha1 /vendor_dlkm/lib/modules/qti_battery_charger.ko)" == "b5aa013e06e54
 fi
 umount /vendor_dlkm
 
-is_miui_rom=false
-[ -f /system/framework/MiuiBooster.jar ] && is_miui_rom=true
-is_oss_kernel_rom=false
-[ -f /vendor/bin/sensor-notifier ] && is_oss_kernel_rom=true
-
 # KernelSU
 [ -f ${split_img}/ramdisk.cpio ] || abort "! Cannot found ramdisk.cpio!"
 ${bin}/magiskboot cpio ${split_img}/ramdisk.cpio test
@@ -278,7 +279,7 @@ $BOOTMODE || setenforce 0
 
 ui_print " "
 ui_print "- Unpacking kernel modules..."
-if $is_hyperos_fw; then
+if ${is_hyperos_fw}; then
 	modules_pkg=${home}/_modules_hyperos.7z
 else
 	modules_pkg=${home}/_modules_miui.7z
@@ -290,15 +291,6 @@ unset modules_pkg
 
 vendor_dlkm_modules_options_file=${home}/_vendor_dlkm_modules/modules.options
 [ -f $vendor_dlkm_modules_options_file ] || touch $vendor_dlkm_modules_options_file
-
-# Clean up the residue of Melt
-if [ -n "$(grep '^cmdline=' ${split_img}/header | cut -d= -f2-)" ]; then
-	patch_cmdline "goodix_core.force_high_report_rate" ""
-	patch_cmdline "qti_battery_charger.report_real_capacity" ""
-	patch_cmdline "qti_battery_charger.fix_battery_usage" ""
-	patch_cmdline "qti_battery_charger_main.report_real_capacity" ""
-	patch_cmdline "qti_battery_charger_main.fix_battery_usage" ""
-fi
 
 # goodix_core.ko / goodix_core_los.ko
 if keycode_select \
@@ -317,7 +309,7 @@ if keycode_select \
 fi
 
 # qti_battery_charger.ko / qti_battery_charger_main.ko
-if $is_hyperos_fw; then
+if ${is_hyperos_fw}; then
 	modname_qti_battery_charger=qti_battery_charger_main
 else
 	modname_qti_battery_charger=qti_battery_charger
@@ -352,7 +344,7 @@ if ! ${skip_option_fix_battery_usage}; then
 		do_fix_battery_usage=true
 	fi
 fi
-if $do_fix_battery_usage; then
+if ${do_fix_battery_usage}; then
 	qti_battery_charger_mod_options="${qti_battery_charger_mod_options} fix_battery_usage=y"
 fi
 unset do_fix_battery_usage skip_option_fix_battery_usage is_fixed_qbc_driver
@@ -432,7 +424,7 @@ unset use_wired_btn_altmode skip_option_wired_btn_altmode
 unset vendor_dlkm_modules_options_file
 
 # Do not load millet related modules in AOSP rom
-if ! $is_miui_rom; then
+if ! ${is_miui_rom}; then
 	for module_name in millet_core millet_binder millet_hs millet_oem_cgroup millet_pkg millet_sig; do
 		echo "blocklist $module_name" >> ${home}/_vendor_dlkm_modules/modules.blocklist
 	done
@@ -456,10 +448,10 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 	vendor_dlkm_block_size=$(get_size /dev/block/mapper/vendor_dlkm${slot})
 
 	# Backup kernel and vendor_dlkm image
-	if $do_backup_flag; then
+	if ${do_backup_flag}; then
 		ui_print "- It looks like you are installing Melt Kernel for the first time."
 
-		keycode_select "Backup the current kernel?" && {
+		if keycode_select "Backup the current kernel?"; then
 			ui_print "- Backing up kernel, vendor_boot, and vendor_dlkm partition..."
 
 			backup_package=/sdcard/Melt-restore-kernel-$(file_getprop /system/build.prop ro.build.version.incremental)-$(date +"%Y%m%d-%H%M%S").zip
@@ -493,7 +485,7 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 			fi
 
 			unset backup_package
-		}
+		fi
 	fi
 
 	ui_print "- Unpacking /vendor_dlkm partition..."
@@ -503,7 +495,7 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 	extract_erofs ${home}/vendor_dlkm.img $extract_vendor_dlkm_dir || vendor_dlkm_is_ext4=true
 	sync
 
-	if $vendor_dlkm_is_ext4; then
+	if ${vendor_dlkm_is_ext4}; then
 		ui_print "- /vendor_dlkm seems to be in ext4 file system."
 		mount ${home}/vendor_dlkm.img $extract_vendor_dlkm_dir -o ro -t ext4 || \
 			abort "! Unsupported file system!"
@@ -555,7 +547,7 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 	cp ${home}/vertmp ${extract_vendor_dlkm_modules_dir}/vertmp
 	sync
 
-	if $vendor_dlkm_is_ext4; then
+	if ${vendor_dlkm_is_ext4}; then
 		set_perm 0 0 0644 ${extract_vendor_dlkm_modules_dir}/*
 		chcon u:object_r:vendor_file:s0 ${extract_vendor_dlkm_modules_dir}/*
 		umount $extract_vendor_dlkm_dir
@@ -578,13 +570,13 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 		fi
 	fi
 
-	$do_check_super_device_size && {
+	if ${do_check_super_device_size}; then
 		ui_print " "
 		ui_print "- The generated image file is larger than the partition size."
 		ui_print "- Checking super partition size..."
 		check_super_device_size  # If the check here fails, it will be aborted directly.
 		ui_print "- Pass!"
-	}
+	fi
 
 	unset do_check_super_device_size vendor_dlkm_block_size vendor_dlkm_is_ext4 extract_vendor_dlkm_dir extract_vendor_dlkm_modules_dir
 fi
