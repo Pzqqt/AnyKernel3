@@ -230,9 +230,9 @@ do_backup_flag=false
 if [ ! -f /vendor_dlkm/lib/modules/vertmp ]; then
 	do_backup_flag=true
 fi
-do_fix_battery_usage=false
+is_fixed_qbc_driver=false
 if [ "$(sha1 /vendor_dlkm/lib/modules/qti_battery_charger.ko)" == "b5aa013e06e545df50030ec7b03216f41306f4d4" ]; then
-	do_fix_battery_usage=true
+	is_fixed_qbc_driver=true
 fi
 umount /vendor_dlkm
 
@@ -326,13 +326,15 @@ if keycode_select \
 	qti_battery_charger_mod_options="${qti_battery_charger_mod_options} report_real_capacity=y"
 fi
 
+do_fix_battery_usage=false
 skip_option_fix_battery_usage=false
-if $is_miui_rom; then
+if ${is_oss_kernel_rom} || ${is_fixed_qbc_driver}; then
+	do_fix_battery_usage=true
 	skip_option_fix_battery_usage=true
-else
-	cat /system/build.prop | grep -qi 'aospa' && skip_option_fix_battery_usage=true
+elif ${is_miui_rom} || cat /system/build.prop | grep -qi 'aospa'; then
+	skip_option_fix_battery_usage=true
 fi
-if ! $do_fix_battery_usage && ! $skip_option_fix_battery_usage; then
+if ! ${skip_option_fix_battery_usage}; then
 	if keycode_select \
 	    "Fix battery usage issue with AOSP rom?" \
 	    " " \
@@ -346,11 +348,13 @@ fi
 if $do_fix_battery_usage; then
 	qti_battery_charger_mod_options="${qti_battery_charger_mod_options} fix_battery_usage=y"
 fi
+unset do_fix_battery_usage skip_option_fix_battery_usage is_fixed_qbc_driver
 
 if [ -n "${qti_battery_charger_mod_options}" ]; then
 	qti_battery_charger_mod_options=$(echo "$qti_battery_charger_mod_options" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 	echo "options ${modname_qti_battery_charger} ${qti_battery_charger_mod_options}" >> $vendor_dlkm_modules_options_file
 fi
+unset modname_qti_battery_charger qti_battery_charger_mod_options
 
 # OSS msm_drm.ko
 if ${is_hyperos_fw}; then
@@ -394,7 +398,7 @@ if ! $is_miui_rom; then
 	fi
 fi
 
-unset modname_qti_battery_charger skip_option_fix_battery_usage vendor_dlkm_modules_options_file qti_battery_charger_mod_options
+unset vendor_dlkm_modules_options_file
 
 # Do not load millet related modules in AOSP rom
 if ! $is_miui_rom; then
