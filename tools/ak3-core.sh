@@ -145,6 +145,8 @@ split_boot() {
 # unpack_ramdisk (extract ramdisk only)
 unpack_ramdisk() {
   local comp;
+  local cpio_file;
+  local cpio_files;
 
   cd $split_img;
   if [ -f ramdisk.cpio.gz ]; then
@@ -157,6 +159,11 @@ unpack_ramdisk() {
 
   if [ -f ramdisk.cpio ]; then
     comp=$($bin/magiskboot decompress ramdisk.cpio 2>&1 | grep -v 'raw' | sed -n 's;.*\[\(.*\)\];\1;p');
+  elif [ -d vendor_ramdisk ]; then
+    if [ ! -f vendor_ramdisk/ramdisk.cpio ]; then
+      abort "Unsupported ramdisk file format. Aborting...";
+    fi;
+    cpio_files="$split_img/vendor_ramdisk/ramdisk.cpio $(ls -1 $split_img/vendor_ramdisk/*.cpio | grep -vE '/ramdisk\.cpio$')";
   else
     abort "No ramdisk found to unpack. Aborting...";
   fi;
@@ -174,7 +181,16 @@ unpack_ramdisk() {
   chmod 755 $ramdisk;
 
   cd $ramdisk;
-  EXTRACT_UNSAFE_SYMLINKS=1 cpio -d -F $split_img/ramdisk.cpio -i;
+  if [ "$cpio_files" ]; then
+    # Unpack all vendor ramdisk cpio
+    for cpio_file in ${cpio_files}; do
+      ui_print "- Unpacking $(basename $cpio_file)...";
+      $bin/magiskboot cpio $cpio_file extract;
+    done;
+  else
+    ui_print "- Unpacking ramdisk.cpio...";
+    $bin/magiskboot cpio $split_img/ramdisk.cpio extract;
+  fi
   if [ $? != 0 -o ! "$(ls)" ]; then
     abort "Unpacking ramdisk failed. Aborting...";
   fi;
@@ -209,6 +225,7 @@ repack_ramdisk() {
     *) comp=$ramdisk_compression;;
   esac;
 
+  ui_print "- Repacking ramdisk.cpio...";
   if [ -f "$bin/mkbootfs" ]; then
     $bin/mkbootfs $ramdisk > ramdisk-new.cpio;
   else
@@ -246,7 +263,7 @@ repack_ramdisk() {
 
 # flash_boot (build, sign and write image only)
 flash_boot() {
-  local varlist i kernel ramdisk fdt cmdline comp part0 part1 nocompflag signfail pk8 cert avbtype;
+  local varlist i f kernel ramdisk fdt cmdline comp part0 part1 nocompflag signfail pk8 cert avbtype;
 
   cd $split_img;
   if [ -f "$bin/mkimage" ]; then
@@ -316,7 +333,18 @@ flash_boot() {
     $bin/mkbootimg --kernel $kernel --ramdisk $ramdisk --cmdline "$cmdline" --base $base --pagesize $pagesize --kernel_offset $kernel_offset --ramdisk_offset $ramdisk_offset --tags_offset "$tags_offset" $dt --output $home/boot-new.img;
   else
     [ "$kernel" ] && cp -f $kernel kernel;
-    [ "$ramdisk" ] && cp -f $ramdisk ramdisk.cpio;
+    if [ "$ramdisk" ]; then
+      if [ -d vendor_ramdisk ]; then
+        # Replace all vendor ramdisk cpio archives with empty cpio ones
+        for f in vendor_ramdisk/*.cpio; do
+          cp -f $bin/_extra/empty.cpio $f;
+        done;
+        # Then, replace the original ramdisk.cpio with the integrated and repackaged ramdisk.cpio
+        cp -f $ramdisk vendor_ramdisk/ramdisk.cpio;
+      else
+        cp -f $ramdisk ramdisk.cpio;
+      fi;
+    fi;
     [ "$dt" -a -f extra ] && cp -f $dt extra;
     for i in dtb recovery_dtbo; do
       [ "$(eval echo \$$i)" -a -f $i ] && cp -f $(eval echo \$$i) $i;
