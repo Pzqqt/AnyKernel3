@@ -32,7 +32,7 @@ patch_vbmeta_flag=auto
 # import functions/variables and setup patching - see for reference (DO NOT REMOVE)
 . tools/ak3-core.sh
 
-dump_boot # use split_boot to skip ramdisk unpack, e.g. for devices with init_boot ramdisk
+split_boot # skip ramdisk unpack
 
 ########## FLASH BOOT & VENDOR_DLKM START ##########
 
@@ -253,7 +253,7 @@ umount /vendor_dlkm
 [ -f ${split_img}/ramdisk.cpio ] || abort "! Cannot found ramdisk.cpio!"
 ${bin}/magiskboot cpio ${split_img}/ramdisk.cpio test
 magisk_patched=$?
-if [ -f ${ramdisk}/kernelsu.ko ]; then
+if ${bin}/magiskboot cpio ${split_img}/ramdisk.cpio "exists kernelsu.ko"; then
 	ui_print "- KernelSU LKM detected!"
 	ui_print "- Then you can only install Melt Kernel without KernelSU support!"
 	if [ $((magisk_patched & 3)) -eq 1 ]; then
@@ -583,7 +583,8 @@ fi
 
 unset do_backup_flag
 
-write_boot # use flash_boot to skip ramdisk repack, e.g. for devices with init_boot ramdisk
+flash_boot # skip ramdisk repack
+flash_generic vendor_dlkm
 
 ########## FLASH BOOT & VENDOR_DLKM END ##########
 
