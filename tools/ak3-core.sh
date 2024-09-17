@@ -230,7 +230,7 @@ repack_ramdisk() {
     $bin/mkbootfs $ramdisk > ramdisk-new.cpio;
   else
     cd $ramdisk;
-    find . | sort | cpio -H newc -o > $home/ramdisk-new.cpio;
+    find . | grep -vE '^\.$' | sort | cpio -H newc -o > $home/ramdisk-new.cpio;
   fi;
   [ $? != 0 ] && packfail=1;
 
