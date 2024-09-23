@@ -581,7 +581,7 @@ unset is_hyperos_fw is_miui_rom
 
 # Patch vbmeta
 ui_print " "
-for vbmeta_blk in /dev/block/bootdevice/by-name/vbmeta${slot} /dev/block/bootdevice/by-name/vbmeta_system${slot}; do
+for vbmeta_blk in /dev/block/bootdevice/by-name/vbmeta*; do
 	ui_print "- Patching ${vbmeta_blk} ..."
 	${bin}/vbmeta-disable-verification $vbmeta_blk || {
 		ui_print "! Failed to patching ${vbmeta_blk}!"
