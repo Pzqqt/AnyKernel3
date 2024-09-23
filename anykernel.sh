@@ -161,6 +161,25 @@ check_super_device_size() {
 		abort "! Super block device size mismatch!"
 }
 
+is_oss_kernel_rom() {
+	[ -f /vendor/bin/sensor-notifier ] && return 0
+
+	# Check if it's new OSS dtbo
+	# https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees/commit/f4dfb9210dc907b335441bfa78720773f679f841
+	m16t_touch_node=$(find /proc/device-tree/ | grep -E -m1 '/m16t-touch.*/compatible$') && m16t_touch_prop=$(cat "$m16t_touch_node") && {
+		test "$m16t_touch_prop" == "goodix,9916r-spi" || return 0
+	}
+	unset m16t_touch_node m16t_touch_prop
+
+	# https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees/commit/393374ee4d02edbc27f3b6b57b965a7fbe87d33b
+	ir_spi_node=$(find /proc/device-tree/ | grep -E -m1 '/ir-spi.*/compatible$') && ir_spi_prop=$(cat "$ir_spi_node") && {
+		test "$ir_spi_prop" == "ir-spi-led" && return 0
+	}
+	unset ir_spi_node ir_spi_prop
+
+	return 1
+}
+
 # Check firmware
 if strings /dev/block/bootdevice/by-name/xbl_config${slot} | grep -q 'led_blink'; then
 	ui_print "HyperOS firmware detected!"
@@ -169,6 +188,11 @@ else
 	ui_print "MIUI14 firmware detected!"
 	is_hyperos_fw=false
 fi
+
+# Check rom type
+is_oss_kernel_rom && abort "Error: Melt Kernel does not seem to support your rom:/"
+is_miui_rom=false
+[ -f /system/framework/MiuiBooster.jar ] && is_miui_rom=true
 
 # Check snapshot status
 # Technical details: https://blog.xzr.moe/archives/30/
@@ -202,27 +226,6 @@ if [ "$snapshot_status" != "none" ]; then
 	abort "Aborting..."
 fi
 unset rc snapshot_status
-
-# Check rom type
-is_miui_rom=false
-[ -f /system/framework/MiuiBooster.jar ] && is_miui_rom=true
-is_oss_kernel_rom=false
-[ -f /vendor/bin/sensor-notifier ] && is_oss_kernel_rom=true
-
-# Check if it's new OSS dtbo
-# https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees/commit/f4dfb9210dc907b335441bfa78720773f679f841
-use_new_gt_driver=false
-m16t_touch_node=$(find /proc/device-tree/ | grep -E -m1 '/m16t-touch.*/compatible$') && m16t_touch_prop=$(cat "$m16t_touch_node") && {
-	test "$m16t_touch_prop" == "goodix,9916r-spi" || use_new_gt_driver=true
-}
-unset m16t_touch_node m16t_touch_prop
-
-# https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees/commit/393374ee4d02edbc27f3b6b57b965a7fbe87d33b
-use_oss_ir_spi_driver=false
-ir_spi_node=$(find /proc/device-tree/ | grep -E -m1 '/ir-spi.*/compatible$') && ir_spi_prop=$(cat "$ir_spi_node") && {
-	test "$ir_spi_prop" == "ir-spi-led" && use_oss_ir_spi_driver=true
-}
-unset ir_spi_node ir_spi_prop
 
 [ -f ${home}/Image.7z ] || abort "! Cannot found ${home}/Image.7z!"
 ui_print " "
@@ -292,7 +295,7 @@ unset modules_pkg
 vendor_dlkm_modules_options_file=${home}/_vendor_dlkm_modules/modules.options
 [ -f $vendor_dlkm_modules_options_file ] || touch $vendor_dlkm_modules_options_file
 
-# goodix_core.ko / goodix_core_los.ko
+# goodix_core.ko
 if keycode_select \
     "Always enable 360HZ touch sampling rate?" \
     " " \
@@ -301,11 +304,7 @@ if keycode_select \
     "use experience and increase power consumption." \
     "If you regret it, you can install this kernel again" \
     "and choose No at this step."; then
-	if ${use_new_gt_driver}; then
-		echo "options goodix_core_los force_high_report_rate=y" >> $vendor_dlkm_modules_options_file
-	else
-		echo "options goodix_core force_high_report_rate=y" >> $vendor_dlkm_modules_options_file
-	fi
+	echo "options goodix_core force_high_report_rate=y" >> $vendor_dlkm_modules_options_file
 fi
 
 # qti_battery_charger.ko / qti_battery_charger_main.ko
@@ -327,7 +326,7 @@ fi
 
 do_fix_battery_usage=false
 skip_option_fix_battery_usage=false
-if ${is_oss_kernel_rom} || ${is_fixed_qbc_driver}; then
+if ${is_fixed_qbc_driver}; then
 	do_fix_battery_usage=true
 	skip_option_fix_battery_usage=true
 elif ${is_miui_rom} || cat /system/build.prop | grep -qi 'aospa'; then
@@ -357,52 +356,22 @@ unset modname_qti_battery_charger qti_battery_charger_mod_options
 
 # OSS msm_drm.ko
 if ${is_hyperos_fw}; then
-	use_oss_msm_drm=false
-	skip_option_oss_msm_drm=false
-
-	if ${is_oss_kernel_rom}; then
-		use_oss_msm_drm=true
-		skip_option_oss_msm_drm=true
-	fi
-	if ! ${skip_option_oss_msm_drm}; then
-		if keycode_select \
-		    "Using open source display drivers?" \
-		    " " \
-		    "Note:" \
-		    "Select No if you don't know what this means."; then
-			use_oss_msm_drm=true
-		fi
-	fi
-	if ${use_oss_msm_drm}; then
-		ui_print "- Replacing msm_drm.ko with OSS build..."
+	if keycode_select \
+	    "Using open source display drivers?" \
+	    " " \
+	    "Note:" \
+	    "Select No if you don't know what this means."; then
 		oss_msm_drm=${home}/_alt/OSS-msm_drm.ko
 		[ -f $oss_msm_drm ] || abort "! Cannot found ${oss_msm_drm}!"
 		cp $oss_msm_drm ${home}/_vendor_dlkm_modules/msm_drm.ko -f
 		unset oss_msm_drm
 	fi
-
-	unset use_oss_msm_drm skip_option_oss_msm_drm
 fi
-
-# OSS ir-spi.ko
-if ${is_hyperos_fw} && ${use_oss_ir_spi_driver}; then
-	ui_print "- Replacing ir-spi.ko with OSS build..."
-	oss_ir_spi=${home}/_alt/OSS-ir-spi.ko
-	[ -f $oss_ir_spi ] || abort "! Cannot found ${oss_ir_spi}!"
-	cp $oss_ir_spi ${home}/_vendor_dlkm_modules/ir-spi.ko -f
-	sed -i 's/Cir-spi\ /Cir-spi-led\ /g'       ${home}/_vendor_dlkm_modules/modules.alias
-	sed -i 's/Cir-spiC\*\ /Cir-spi-ledC\*\ /g' ${home}/_vendor_dlkm_modules/modules.alias
-	unset oss_ir_spi
-fi
-unset use_oss_ir_spi_driver
 
 # Alternative wired headset buttons mode
 use_wired_btn_altmode=false
 skip_option_wired_btn_altmode=false
 if ${is_miui_rom}; then
-	skip_option_wired_btn_altmode=true
-elif ${is_oss_kernel_rom}; then
-	use_wired_btn_altmode=true
 	skip_option_wired_btn_altmode=true
 fi
 if ! ${skip_option_wired_btn_altmode}; then
@@ -429,15 +398,6 @@ if ! ${is_miui_rom}; then
 		echo "blocklist $module_name" >> ${home}/_vendor_dlkm_modules/modules.blocklist
 	done
 fi
-
-# Only load one of the two goodix touch screen drivers
-if ${use_new_gt_driver}; then
-	echo "blocklist goodix_core" >> ${home}/_vendor_dlkm_modules/modules.blocklist
-else
-	echo "blocklist goodix_core_los" >> ${home}/_vendor_dlkm_modules/modules.blocklist
-fi
-
-unset use_new_gt_driver
 
 ui_print " "
 if true; then  # I don't want to adjust the indentation of the code block below, so leave it as is.
@@ -617,7 +577,7 @@ write_boot # use flash_boot to skip ramdisk repack, e.g. for devices with init_b
 
 ########## FLASH VENDOR_BOOT END ##########
 
-unset is_hyperos_fw is_miui_rom is_oss_kernel_rom
+unset is_hyperos_fw is_miui_rom
 
 # Patch vbmeta
 ui_print " "
