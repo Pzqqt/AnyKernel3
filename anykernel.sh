@@ -543,6 +543,9 @@ fi
 
 unset do_backup_flag
 
+# Temp fix: Do not modify the os_version information of the boot image
+sed -i '/^os_version=/d; /^os_patch_level=/d' ${split_img}/header
+
 flash_boot # skip ramdisk repack
 flash_generic vendor_dlkm
 
