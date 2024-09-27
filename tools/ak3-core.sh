@@ -340,7 +340,7 @@ flash_boot() {
           cp -f $bin/_extra/empty.cpio $f;
         done;
         # Then, replace the original ramdisk.cpio with the integrated and repackaged ramdisk.cpio
-        cp -f $ramdisk vendor_ramdisk/ramdisk.cpio;
+        mv -f $ramdisk vendor_ramdisk/ramdisk.cpio;
       else
         cp -f $ramdisk ramdisk.cpio;
       fi;
