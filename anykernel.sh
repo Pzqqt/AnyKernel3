@@ -557,6 +557,9 @@ rm ${home}/boot.img
 rm ${home}/boot-new.img
 rm ${home}/vendor_dlkm.img
 
+unset magisk_patched
+rm ${home}/magisk_patched
+
 ########## FLASH VENDOR_BOOT START ##########
 
 ## vendor_boot shell variables
@@ -564,6 +567,7 @@ block=vendor_boot
 is_slot_device=1
 ramdisk_compression=auto
 patch_vbmeta_flag=auto
+no_magisk_check=true
 
 # reset for vendor_boot patching
 reset_ak
