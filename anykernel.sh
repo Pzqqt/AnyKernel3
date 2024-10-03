@@ -399,12 +399,15 @@ if ! ${is_miui_rom}; then
 	done
 fi
 
+cp ${home}/boot.img ${home}/boot-orig.img
+
 ui_print " "
 if true; then  # I don't want to adjust the indentation of the code block below, so leave it as is.
 	do_check_super_device_size=false
 
 	# Dump vendor_dlkm partition image
 	dd if=/dev/block/mapper/vendor_dlkm${slot} of=${home}/vendor_dlkm.img
+	cp ${home}/vendor_dlkm.img ${home}/vendor_dlkm-orig.img
 	vendor_dlkm_block_size=$(get_size /dev/block/mapper/vendor_dlkm${slot})
 
 	# Backup kernel and vendor_dlkm image
@@ -559,6 +562,8 @@ rm ${home}/vendor_dlkm.img
 
 unset magisk_patched
 rm ${home}/magisk_patched
+
+touch ${home}/rollback_if_abort_flag
 
 ########## FLASH VENDOR_BOOT START ##########
 
