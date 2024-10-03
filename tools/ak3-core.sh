@@ -129,10 +129,11 @@ split_boot() {
   elif [ -f "$bin/rkcrc" ]; then
     dd bs=4096 skip=8 iflag=skip_bytes conv=notrunc if=$bootimg of=ramdisk.cpio.gz;
   else
-    (set -o pipefail; $bin/magiskboot unpack -h $bootimg 2>&1 | tee infotmp >&2);
+    (set -o pipefail; timeout 20s $bin/magiskboot unpack -h $bootimg 2>&1 | tee infotmp >&2);
     case $? in
-      1) splitfail=1;;
+      0) ;;
       2) touch chromeos;;
+      *) splitfail=1;;
     esac;
   fi;
 
