@@ -34,15 +34,12 @@ no_block_display=true
 . tools/ak3-core.sh
 unset no_block_display
 
-if [ -f ${home}/boot-orig.img ]; then
-	mv ${home}/boot-orig.img ${home}/boot.img
-	rm -f ${home}/boot_flashed
-	flash_generic boot
-fi
-if [ -f ${home}/vendor_dlkm-orig.img ]; then
-	mv ${home}/vendor_dlkm-orig.img ${home}/vendor_dlkm.img
-	rm -f ${home}/vendor_dlkm_flashed
-	flash_generic vendor_dlkm
-fi
+for partition in boot vendor_dlkm; do
+	if [ -f ${home}/_orig/${partition}.img ]; then
+		mv -f ${home}/_orig/${partition}.img ${home}/${partition}.img
+		rm -f ${home}/${partition}_flashed
+		flash_generic ${partition}
+	fi
+done
 
 ## end boot install
