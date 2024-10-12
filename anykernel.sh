@@ -162,20 +162,20 @@ check_super_device_size() {
 }
 
 is_oss_kernel_rom() {
+	local m16t_touch_node m16t_touch_prop ir_spi_node ir_spi_prop
+
 	[ -f /vendor/bin/sensor-notifier ] && return 0
 
 	# Check if it's new OSS dtbo
 	# https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees/commit/f4dfb9210dc907b335441bfa78720773f679f841
-	m16t_touch_node=$(find /proc/device-tree/ | grep -E -m1 '/m16t-touch.*/compatible$') && m16t_touch_prop=$(cat "$m16t_touch_node") && {
-		test "$m16t_touch_prop" == "goodix,9916r-spi" || return 0
-	}
-	unset m16t_touch_node m16t_touch_prop
+	m16t_touch_node=$(find /proc/device-tree/ | grep -E -m1 '/m16t-touch.*/compatible$') && \
+		m16t_touch_prop=$(cat "$m16t_touch_node") && \
+			test "$m16t_touch_prop" == "goodix,9916r-spi" || return 0
 
 	# https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees/commit/393374ee4d02edbc27f3b6b57b965a7fbe87d33b
-	ir_spi_node=$(find /proc/device-tree/ | grep -E -m1 '/ir-spi.*/compatible$') && ir_spi_prop=$(cat "$ir_spi_node") && {
-		test "$ir_spi_prop" == "ir-spi-led" && return 0
-	}
-	unset ir_spi_node ir_spi_prop
+	ir_spi_node=$(find /proc/device-tree/ | grep -E -m1 '/ir-spi.*/compatible$') && \
+		ir_spi_prop=$(cat "$ir_spi_node") && \
+			test "$ir_spi_prop" == "ir-spi-led" && return 0
 
 	return 1
 }
@@ -243,6 +243,10 @@ rm ${home}/Image.7z
 is_mounted /vendor_dlkm || \
 	mount /vendor_dlkm -o ro || mount /dev/block/mapper/vendor_dlkm${slot} /vendor_dlkm -o ro || \
 		abort "! Failed to mount /vendor_dlkm"
+
+# Btw, determine again whether it is a ROM based on the OSS kernel
+strings /vendor_dlkm/lib/modules/cnss2.ko | grep -q 'clang version 12.0.5' || \
+	abort "Error: Melt Kernel does not seem to support your rom:/"
 
 strings ${home}/Image 2>/dev/null | grep -E -m1 'Linux version.*#' > ${home}/vertmp
 
