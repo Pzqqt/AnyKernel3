@@ -254,7 +254,7 @@ is_fixed_qbc_driver=false
 if [ "$(sha1 /vendor_dlkm/lib/modules/qti_battery_charger.ko)" == "b5aa013e06e545df50030ec7b03216f41306f4d4" ]; then
 	is_fixed_qbc_driver=true
 fi
-umount /vendor_dlkm
+$BOOTMODE || umount /vendor_dlkm
 
 # KernelSU
 [ -f ${split_img}/ramdisk.cpio ] || abort "! Cannot found ramdisk.cpio!"
