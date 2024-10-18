@@ -162,7 +162,8 @@ def main_multi(build_version):
                     )
             zip_file = make_zip(
                 "META-INF", "tools", "_modules_miui.7z", "_modules_hyperos.7z", "bs_patches",
-                "anykernel.sh", "_restore_anykernel.sh", "Image.7z", "LICENSE", "banner",
+                "anykernel.sh", "_restore_anykernel.sh", "_rollback_anykernel.sh", "Image.7z",
+                "LICENSE", "banner",
             )
     finally:
         remove_path(local_path("anykernel.sh"))
