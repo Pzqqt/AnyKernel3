@@ -109,7 +109,7 @@ class KernelModule:
                 crc_str, symbol = line.strip().split()
                 self.__export_modversions[symbol] = Crc(crc_str)
 
-        self.__cached_depends = None
+        self.__cached_depends: Union[None, Tuple[str, ...]] = None
 
     @property
     def path(self) -> str:
@@ -165,11 +165,11 @@ class VirtualKernel:
                     continue
                 try:
                     symbol_name = line.split()[1]
-                    self.__symbols[symbol_name] = {
-                        "source": None,
-                        "crc": Crc(line.split()[0]),
-                        "used_by": set(),
-                    }
+                    self.__symbols[symbol_name] = VirtualKernelSymbolInfo(
+                        source=None,
+                        crc=Crc(line.split()[0]),
+                        used_by=set(),
+                    )
                 except (IndexError, ValueError, TypeError) as e:
                     raise RuntimeError("Error parsing line %d of %s!" % (line_no, vmlinux_symvers_file)) from e
         self.__loaded_modules: Dict[str, KernelModule] = {}
@@ -212,11 +212,11 @@ class VirtualKernel:
                 print("%s: Repeated symbol: %s" % (kernel_module.name, symbol))
             return False
         for sym_name, sym_crc in km_export_modversions.items():
-            self.__symbols[sym_name] = {
-                "source": weakref.proxy(kernel_module),
-                "crc": sym_crc,
-                "used_by": set(),
-            }
+            self.__symbols[sym_name] = VirtualKernelSymbolInfo(
+                source=weakref.proxy(kernel_module),
+                crc=sym_crc,
+                used_by=set(),
+            )
         for sym_name in km_modversions.keys():
             self.__symbols[sym_name]["used_by"].add(kernel_module.name)
         self.__loaded_modules[kernel_module.name] = kernel_module

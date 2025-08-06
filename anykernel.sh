@@ -357,7 +357,8 @@ if ${exist_ksu_lkm}; then
 		ui_print "- $_LANG_DETECTED_COMPATIBLE_KSU_LKM_WITH_MAGISK_PROMPT_2"
 		sleep 3
 	fi
-elif keycode_select "$_LANG_SELECT_KSU" \
+elif keycode_select \
+    "$_LANG_SELECT_KSU" \
     " " \
     "$_LANG_NOTES" \
     "$_LANG_SELECT_KSU_PROMPT_1" \
@@ -369,7 +370,8 @@ elif keycode_select "$_LANG_SELECT_KSU" \
 		ui_print " "
 		sleep 3
 	fi
-	if keycode_select "$_LANG_SELECT_SUSFS" \
+	if keycode_select \
+	    "$_LANG_SELECT_SUSFS" \
 	    " " \
 	    "$_LANG_NOTES" \
 	    "$_LANG_SELECT_SUSFS_PROMPT_1" \
