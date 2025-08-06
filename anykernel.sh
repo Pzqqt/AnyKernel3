@@ -28,6 +28,7 @@ block=boot
 is_slot_device=1
 ramdisk_compression=auto
 patch_vbmeta_flag=auto
+no_magisk_check=true
 
 # import functions/variables and setup patching - see for reference (DO NOT REMOVE)
 . tools/ak3-core.sh
@@ -380,8 +381,7 @@ elif keycode_select "$_LANG_SELECT_KSU" \
 		apply_patch ${home}/Image "$SHA1_STOCK" "$SHA1_KSU" ${home}/bs_patches/ksu.p
 	fi
 fi
-unset exist_ksu_lkm
-export magisk_patched
+unset exist_ksu_lkm magisk_patched
 
 # Fix unable to mount image as read-write in recovery
 $BOOTMODE || setenforce 0

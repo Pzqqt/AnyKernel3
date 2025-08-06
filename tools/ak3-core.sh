@@ -242,8 +242,8 @@ repack_ramdisk() {
   if [ ! "$no_magisk_check" ] && [ ! "$magisk_patched" ]; then
     $bin/magiskboot cpio ramdisk-new.cpio test;
     magisk_patched=$?;
+    [ "$magisk_patched" -eq 1 ] && $bin/magiskboot cpio ramdisk-new.cpio "extract .backup/.magisk $split_img/.magisk";
   fi;
-  [ "$magisk_patched" -eq 1 ] && $bin/magiskboot cpio ramdisk-new.cpio "extract .backup/.magisk $split_img/.magisk";
   if [ "$comp" ]; then
     $bin/magiskboot compress=$comp ramdisk-new.cpio;
     if [ $? != 0 ] && $comp --help 2>/dev/null; then
@@ -359,7 +359,7 @@ flash_boot() {
           $bin/magiskboot cpio ramdisk.cpio test;
           magisk_patched=$?;
         fi;
-        if [ "$magisk_patched" -eq 1 ]; then
+        if [ "$magisk_patched" -eq 1 -a ! "$no_magisk_check" ]; then
           ui_print " " "Magisk detected! Patching kernel so reflashing Magisk is not necessary...";
           comp=$($bin/magiskboot decompress kernel 2>&1 | grep -vE 'raw|zimage' | sed -n 's;.*\[\(.*\)\];\1;p');
           ($bin/magiskboot split $kernel || $bin/magiskboot decompress $kernel kernel) 2>/dev/null;
