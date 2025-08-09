@@ -176,6 +176,9 @@ do_aw882xx_hack() {
 
 		# Synchronously load the firmware
 		fdtput "$dtbo_file" "${aw882xx_node}/${node}" "sync-load" 1 -tu
+
+		# Synchronously mute
+		fdtput "$dtbo_file" "${aw882xx_node}/${node}" "mute-sync" 1 -tu
 	done
 }
 
