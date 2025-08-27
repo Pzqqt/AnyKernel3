@@ -404,7 +404,7 @@ vendor_dlkm_modules_options_file=${home}/_vendor_dlkm_modules/modules.options
 [ -f $vendor_dlkm_modules_options_file ] || touch $vendor_dlkm_modules_options_file
 
 # xiaomi_touch.ko
-if [ -n "$(ls /vendor/bin/hw/vendor.lineage.touch@* 2>/dev/null)" ]; then
+if [ -n "$(ls /vendor/bin/hw/vendor.lineage.touch* 2>/dev/null)" ]; then
 	ui_print " "
 	ui_print "- $_LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_1"
 	ui_print "- $_LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_2"
