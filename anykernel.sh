@@ -423,6 +423,23 @@ if ${is_hyperos_fw_with_new_adsp2}; then
 fi
 unset modules_pkg
 
+remove_vendor_boot_modules() {
+	while [ $# != 0 ]; do
+		rm ${home}/_vendor_boot_modules/${1}.ko
+		sed -i "/^${1}\.ko/d" ${home}/_vendor_boot_modules/modules.load
+		sed -i "/^${1}\.ko/d" ${home}/_vendor_boot_modules/modules.load.recovery
+		shift
+	done
+}
+
+remove_vendor_dlkm_modules() {
+	while [ $# != 0 ]; do
+		rm ${home}/_vendor_dlkm_modules/${1}.ko
+		sed -i "/^${1}\.ko/d" ${home}/_vendor_dlkm_modules/modules.load
+		shift
+	done
+}
+
 need_depmod_regen_vendor_boot=false
 need_depmod_regen_vendor_dlkm=false
 
@@ -601,29 +618,15 @@ fi
 # Do not load some Xiaomi special modules in AOSP roms
 if ! ${is_miui_rom}; then
 	# millet related modules
-	for module_name in millet_core millet_binder millet_hs millet_oem_cgroup millet_pkg millet_sig binder_gki; do
-		rm ${home}/_vendor_dlkm_modules/${module_name}.ko
-		sed -i "/^${module_name}\.ko/d" ${home}/_vendor_dlkm_modules/modules.load
-	done
+	remove_vendor_dlkm_modules millet_core millet_binder millet_hs millet_oem_cgroup millet_pkg millet_sig binder_gki
 	# OSS sched-walt
 	cp -f ${home}/_alt/OSS-sched-walt.ko ${home}/_vendor_boot_modules/sched-walt.ko
-	for module_name in metis mi_schedule migt; do
-		rm ${home}/_vendor_boot_modules/${module_name}.ko
-		rm ${home}/_vendor_dlkm_modules/${module_name}.ko
-		sed -i "/^${module_name}\.ko/d" ${home}/_vendor_boot_modules/modules.load
-		sed -i "/^${module_name}\.ko/d" ${home}/_vendor_boot_modules/modules.load.recovery
-		sed -i "/^${module_name}\.ko/d" ${home}/_vendor_dlkm_modules/modules.load
-	done
+	remove_vendor_boot_modules metis mi_schedule migt
+	remove_vendor_dlkm_modules migt
 	# Others
-	for module_name in extend_reclaim mi_freqwdg perf_helper; do
-		rm ${home}/_vendor_boot_modules/${module_name}.ko
-		sed -i "/^${module_name}\.ko/d" ${home}/_vendor_boot_modules/modules.load
-		sed -i "/^${module_name}\.ko/d" ${home}/_vendor_boot_modules/modules.load.recovery
-	done
-	for module_name in binder_prio mi_freqwdg miicmpfilter perf_helper; do
-		rm ${home}/_vendor_dlkm_modules/${module_name}.ko
-		sed -i "/^${module_name}\.ko/d" ${home}/_vendor_dlkm_modules/modules.load
-	done
+	remove_vendor_boot_modules extend_reclaim mi_freqwdg perf_helper
+	remove_vendor_dlkm_modules binder_prio mi_freqwdg miicmpfilter perf_helper
+
 	need_depmod_regen_vendor_boot=true
 	need_depmod_regen_vendor_dlkm=true
 fi
