@@ -605,6 +605,15 @@ if ! ${is_miui_rom}; then
 		rm ${home}/_vendor_dlkm_modules/${module_name}.ko
 		sed -i "/^${module_name}\.ko/d" ${home}/_vendor_dlkm_modules/modules.load
 	done
+	# OSS sched-walt
+	cp -f ${home}/_alt/OSS-sched-walt.ko ${home}/_vendor_boot_modules/sched-walt.ko
+	for module_name in metis mi_schedule migt; do
+		rm ${home}/_vendor_boot_modules/${module_name}.ko
+		rm ${home}/_vendor_dlkm_modules/${module_name}.ko
+		sed -i "/^${module_name}\.ko/d" ${home}/_vendor_boot_modules/modules.load
+		sed -i "/^${module_name}\.ko/d" ${home}/_vendor_boot_modules/modules.load.recovery
+		sed -i "/^${module_name}\.ko/d" ${home}/_vendor_dlkm_modules/modules.load
+	done
 	# Others
 	for module_name in extend_reclaim mi_freqwdg perf_helper; do
 		rm ${home}/_vendor_boot_modules/${module_name}.ko
