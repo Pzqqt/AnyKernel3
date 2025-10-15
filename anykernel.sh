@@ -51,6 +51,8 @@ SHA1_SUSFS="@SHA1_SUSFS@"
 KEYCODE_UP=42
 KEYCODE_DOWN=41
 
+ln -s ${bin}/kmod ${bin}/depmod
+
 extract_erofs() {
 	local img_file=$1
 	local out_dir=$2
@@ -214,6 +216,27 @@ random_strings() {
 	local len=$1
 
 	cat /dev/urandom | tr -dc 'a-zA-Z' | head -c $len
+}
+
+depmod_regen() {
+	local modules_dir=$1
+	local real_modules_path=$2
+	local temp_dir temp_mods_dir rc
+
+	temp_dir=${home}/_tmp_modules_$(random_strings 3)
+	temp_mods_dir=${temp_dir}/lib/modules/1.1  # "1.1" is a fake version
+	mkdir -p "$temp_mods_dir"
+	cp ${modules_dir}/*.ko ${temp_mods_dir}/
+
+	${bin}/depmod -b "$temp_dir" "1.1"
+	rc=$?
+	[ $rc != 0 ] && return $rc
+
+	cp -f ${temp_mods_dir}/modules.alias ${modules_dir}/modules.alias
+	cp -f ${temp_mods_dir}/modules.softdep ${modules_dir}/modules.softdep
+	sed -e "s| | ${real_modules_path}|g" -e "s|^|${real_modules_path}|g" ${temp_mods_dir}/modules.dep > ${modules_dir}/modules.dep
+
+	rm -rf "$temp_dir"
 }
 
 # Check firmware
@@ -400,6 +423,9 @@ if ${is_hyperos_fw_with_new_adsp2}; then
 fi
 unset modules_pkg
 
+need_depmod_regen_vendor_boot=false
+need_depmod_regen_vendor_dlkm=false
+
 vendor_dlkm_modules_options_file=${home}/_vendor_dlkm_modules/modules.options
 [ -f $vendor_dlkm_modules_options_file ] || touch $vendor_dlkm_modules_options_file
 
@@ -409,9 +435,7 @@ if [ -n "$(ls /vendor/bin/hw/vendor.lineage.touch* 2>/dev/null)" ]; then
 	ui_print "- $_LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_1"
 	ui_print "- $_LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_2"
 	cp -f ${home}/_alt/xiaomi_touch_los/* ${home}/_vendor_dlkm_modules/
-	sed -i \
-	    's/\/vendor\/lib\/modules\/xiaomi_touch\.ko:/\/vendor\/lib\/modules\/xiaomi_touch\.ko:\ \/vendor\/lib\/modules\/panel_event_notifier\.ko/g' \
-	    ${home}/_vendor_dlkm_modules/modules.dep
+	need_depmod_regen_vendor_dlkm=true
 fi
 
 # goodix_core.ko
@@ -578,16 +602,30 @@ fi
 if ! ${is_miui_rom}; then
 	# millet related modules
 	for module_name in millet_core millet_binder millet_hs millet_oem_cgroup millet_pkg millet_sig binder_gki; do
-		echo "blocklist $module_name" >> ${home}/_vendor_dlkm_modules/modules.blocklist
+		rm ${home}/_vendor_dlkm_modules/${module_name}.ko
+		sed -i "/^${module_name}\.ko/d" ${home}/_vendor_dlkm_modules/modules.load
 	done
 	# Others
-	for module_name in extend_reclaim mi_freqwdg mi_memory perf_helper; do
-		echo "blocklist $module_name" >> ${home}/_vendor_boot_modules/modules.blocklist
+	for module_name in extend_reclaim mi_freqwdg perf_helper; do
+		rm ${home}/_vendor_boot_modules/${module_name}.ko
+		sed -i "/^${module_name}\.ko/d" ${home}/_vendor_boot_modules/modules.load
+		sed -i "/^${module_name}\.ko/d" ${home}/_vendor_boot_modules/modules.load.recovery
 	done
 	for module_name in binder_prio mi_freqwdg miicmpfilter perf_helper; do
-		echo "blocklist $module_name" >> ${home}/_vendor_dlkm_modules/modules.blocklist
+		rm ${home}/_vendor_dlkm_modules/${module_name}.ko
+		sed -i "/^${module_name}\.ko/d" ${home}/_vendor_dlkm_modules/modules.load
 	done
+	need_depmod_regen_vendor_boot=true
+	need_depmod_regen_vendor_dlkm=true
 fi
+
+if ${need_depmod_regen_vendor_boot}; then
+	depmod_regen "${home}/_vendor_boot_modules" "/lib/modules/" || abort "! $_LANG_DEPMOD_REGEN_FAILED"
+fi
+if ${need_depmod_regen_vendor_dlkm}; then
+	depmod_regen "${home}/_vendor_dlkm_modules" "/vendor/lib/modules/" || abort "! $_LANG_DEPMOD_REGEN_FAILED"
+fi
+unset need_depmod_regen_vendor_boot need_depmod_regen_vendor_dlkm
 
 if ! keycode_select \
     "$_LANG_SELECT_LAST" \

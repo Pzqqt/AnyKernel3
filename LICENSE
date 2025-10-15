@@ -294,6 +294,16 @@ vendor_boot_fix: None
     Source:
     https://github.com/Pzqqt/AnyKernel3/tree/Marble-Melt/vendor_boot_fix-ndk
 
+kmod: GPLv2+ & LGPL-2.1
+    LGPLv2.1+ for libkmod, testsuite and helper libraries
+    see: https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git/tree/COPYING
+
+    GPLv2+ for tools/*
+    see: https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git/tree/tools/COPYING
+
+    Self-compiled binaries from unmodified source:
+    https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git
+
 ## Optional Binary Licenses:
 
 mkbootfs, mkbootimg: Apache License 2.0

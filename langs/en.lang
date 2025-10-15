@@ -109,6 +109,8 @@ _LANG_SELECT_DISGUISED_ADRENO730_PROMPT_2="Disguising the GPU model as Adreno730
 _LANG_SELECT_DISGUISED_ADRENO730_PROMPT_3="higher image quality and frame rate in some mobile"
 _LANG_SELECT_DISGUISED_ADRENO730_PROMPT_4="games, but the side effects are unknown."
 
+_LANG_DEPMOD_REGEN_FAILED="Failed to regenerate module dependency info!"
+
 _LANG_SELECT_LAST="This is the last option."
 _LANG_SELECT_LAST_PROMPT_1="Select Yes to start the installation."
 _LANG_SELECT_LAST_PROMPT_2="Select No to exit the installer."
