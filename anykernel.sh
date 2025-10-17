@@ -629,8 +629,8 @@ if ! ${is_miui_rom}; then
 	remove_vendor_boot_modules metis mi_schedule migt
 	remove_vendor_dlkm_modules migt
 	# Others
-	remove_vendor_boot_modules extend_reclaim mi_freqwdg perf_helper
-	remove_vendor_dlkm_modules binder_prio mi_freqwdg miicmpfilter perf_helper
+	remove_vendor_boot_modules extend_reclaim mi_freqwdg perf_helper xlogchar
+	remove_vendor_dlkm_modules binderinfo binder_prio mi_freqwdg miicmpfilter perf_helper xlogchar
 
 	need_depmod_regen_vendor_boot=true
 	need_depmod_regen_vendor_dlkm=true
