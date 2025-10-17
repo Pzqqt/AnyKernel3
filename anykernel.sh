@@ -223,6 +223,7 @@ depmod_regen() {
 	local real_modules_path=$2
 	local temp_dir temp_mods_dir rc
 
+	[ "${real_modules_path: -1}" == '/' ] || real_modules_path="${real_modules_path}/"
 	temp_dir=${home}/_tmp_modules_$(random_strings 3)
 	temp_mods_dir=${temp_dir}/lib/modules/1.1  # "1.1" is a fake version
 	mkdir -p "$temp_mods_dir"
@@ -230,7 +231,10 @@ depmod_regen() {
 
 	${bin}/depmod -b "$temp_dir" "1.1"
 	rc=$?
-	[ $rc != 0 ] && return $rc
+	if [ $rc != 0 ]; then
+		rm -rf "$temp_dir"
+		return $rc
+	fi
 
 	cp -f ${temp_mods_dir}/modules.alias ${modules_dir}/modules.alias
 	cp -f ${temp_mods_dir}/modules.softdep ${modules_dir}/modules.softdep
