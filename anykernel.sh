@@ -52,6 +52,7 @@ KEYCODE_UP=42
 KEYCODE_DOWN=41
 
 ln -s ${bin}/kmod ${bin}/depmod
+ln -s ${bin}/kmod ${bin}/modprobe
 
 extract_erofs() {
 	local img_file=$1
@@ -358,7 +359,7 @@ exist_ksu_lkm=false
 if ${bin}/magiskboot cpio ${split_img}/ramdisk.cpio "exists kernelsu.ko"; then
 	${bin}/magiskboot cpio ${split_img}/ramdisk.cpio "extract kernelsu.ko ${home}/kernelsu.ko" || \
 		abort "! $_LANG_FAILED_TO_EXTRACT kernelsu.ko!"
-	if strings ${home}/kernelsu.ko | grep -q 'clang version 12.0.5'; then
+	if ${bin}/modprobe --show-modversions ${home}/kernelsu.ko | grep -qE '0x7c24b32d[[:space:]]+module_layout'; then
 		exist_ksu_lkm=true
 	else
 		ui_print "- $_LANG_DETECTED_INCOMPATIBLE_KSU_LKM"
