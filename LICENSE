@@ -70,10 +70,12 @@ busybox: GPLv2
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    Per Section 3(b), self-compiled binary from modified source:
+    Per Section 3(b), modified source:
     https://git.busybox.net/busybox/
-    https://github.com/osm0sis/android-busybox-ndk
-    (pre-patched source tree used to build available upon request)
+    https://github.com/topjohnwu/ndk-box-kitchen
+
+    Pre-compiled binaries from Magisk:
+    https://github.com/topjohnwu/magisk-files/releases/download/files/busybox-1.36.1.1.zip
 
 lptools_static: Apache License 2.0
 fec: Apache License 2.0
