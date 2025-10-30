@@ -249,6 +249,7 @@ if strings /dev/block/bootdevice/by-name/xbl_config${slot} | grep -q 'led_blink'
 	ui_print "$_LANG_HOS_FIRMWARE_DETECTED"
 	is_hyperos_fw=true
 	is_hyperos_fw_with_new_adsp2=false
+	is_hyperos_fw_with_newer_adsp2=false
 	if is_mounted /vendor/firmware_mnt && [ -d /vendor/firmware_mnt/image ]; then
 		modem_mount_path=/vendor/firmware_mnt
 	else
@@ -269,6 +270,10 @@ if strings /dev/block/bootdevice/by-name/xbl_config${slot} | grep -q 'led_blink'
 	if strings "${modem_mount_path}/image/adsp2.b18" | grep -q 'audiostatus'; then
 		ui_print "$_LANG_NEW_ADSP2_FIRMWARE_DETECTED"
 		is_hyperos_fw_with_new_adsp2=true
+		if strings "${modem_mount_path}/image/adsp2.b18" | grep -q 'max_life_vol'; then
+			ui_print "$_LANG_NEWER_ADSP2_FIRMWARE_DETECTED"
+			is_hyperos_fw_with_newer_adsp2=true
+		fi
 	fi
 
 	if [ -d "${home}/_modem_mnt" ]; then
@@ -422,7 +427,10 @@ modules_pkg=${home}/_modules_hyperos.7z
 [ -f $modules_pkg ] || abort "! $_LANG_CANNOT_FOUND ${modules_pkg}!"
 ${bin}/7za x $modules_pkg -o${home}/ && [ -d ${home}/_vendor_boot_modules ] && [ -d ${home}/_vendor_dlkm_modules ] || \
 	abort "! $_LANG_FAILED_TO_UNPACK ${modules_pkg}!"
-if ${is_hyperos_fw_with_new_adsp2}; then
+if ${is_hyperos_fw_with_newer_adsp2}; then
+	cp -f ${home}/_alt/NEW2-qti_battery_charger_main.ko ${home}/_vendor_dlkm_modules/qti_battery_charger_main.ko
+	cp -f ${home}/_alt/NEW2-qti_battery_charger_main.ko ${home}/_vendor_boot_modules/qti_battery_charger_main.ko
+elif ${is_hyperos_fw_with_new_adsp2}; then
 	cp -f ${home}/_alt/NEW-qti_battery_charger_main.ko ${home}/_vendor_dlkm_modules/qti_battery_charger_main.ko
 	cp -f ${home}/_alt/NEW-qti_battery_charger_main.ko ${home}/_vendor_boot_modules/qti_battery_charger_main.ko
 fi
@@ -886,7 +894,7 @@ write_boot  # Since dtbo.img exists in ${home}, the dtbo partition will also be 
 
 ########## FLASH VENDOR_BOOT END ##########
 
-unset is_miui_rom is_aospa_rom is_oss_kernel_rom is_hyperos_fw_with_new_adsp2
+unset is_miui_rom is_aospa_rom is_oss_kernel_rom is_hyperos_fw_with_new_adsp2 is_hyperos_fw_with_newer_adsp2
 
 # Patch vbmeta
 ui_print " "

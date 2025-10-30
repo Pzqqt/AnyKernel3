@@ -25,7 +25,8 @@ _LANG_SUPER_SIZE_MISMATCH="Super block device size mismatch!"
 # main
 _LANG_MIUI14_FIRMWARE_DETECTED="MIUI14 firmware detected!"
 _LANG_HOS_FIRMWARE_DETECTED="HyperOS firmware detected!"
-_LANG_NEW_ADSP2_FIRMWARE_DETECTED="Upgraded adsp2 firmware detected!"
+_LANG_NEW_ADSP2_FIRMWARE_DETECTED="New adsp2 firmware detected!"
+_LANG_NEWER_ADSP2_FIRMWARE_DETECTED="Newer adsp2 firmware detected!"
 _LANG_MIUI14_FIRMWARE_NOT_SUPPORT="Sorry! Melt Kernel dose not support MIUI14 firmware!"
 
 _LANG_FAILED_TO_GET_SNAPSHOT_STATUS="Cannot get snapshot status via snapshotupdater_static!"
