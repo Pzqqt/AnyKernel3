@@ -743,7 +743,11 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 			ui_print "- $_LANG_VENDOR_DLKM_RESIZE_PROMPT_2"
 
 			${bin}/e2fsck -f -y ${home}/vendor_dlkm.img
-			vendor_dlkm_resized_size=$(echo $vendor_dlkm_need_size | awk '{printf "%dM", ($1 / 1024 / 1024 + 1)}')
+			if [ "$vendor_dlkm_need_size" -le $((128*1024*1024)) ]; then
+				vendor_dlkm_resized_size="128M"
+			else
+				vendor_dlkm_resized_size=$(echo $vendor_dlkm_need_size | awk '{printf "%dM", ($1 / 1024 / 1024 + 1)}')
+			fi
 			${bin}/resize2fs ${home}/vendor_dlkm.img $vendor_dlkm_resized_size || \
 				abort "! $_LANG_VENDOR_DLKM_RESIZE_FAILED"
 			ui_print "- ${_LANG_VENDOR_DLKM_RESIZED}: ${vendor_dlkm_resized_size}."
