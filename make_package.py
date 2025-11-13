@@ -153,22 +153,30 @@ def main_multi(build_version):
     temp_dtb_7z = temp_path("_dtb.7z")
     temp_mods_hos_7z = temp_path("_modules_hyperos.7z")
 
+    have_image_susfs = False
+
     assert os.path.exists(image_stock)
     assert os.path.exists(image_ksu)
+    if os.path.exists(image_susfs):
+        have_image_susfs = True
 
     rich.print("[yellow][1/9][/yellow] [green]Generating SHA1 for image files...[/green]")
     sha1_image_stock = get_sha1(image_stock)
     sha1_image_ksu   = get_sha1(image_ksu)
-    sha1_image_susfs = get_sha1(image_susfs)
     print("SHA1 for Image      :", sha1_image_stock)
     print("SHA1 for Image_ksu  :", sha1_image_ksu)
-    print("SHA1 for Image_susfs:", sha1_image_susfs)
+    if have_image_susfs:
+        sha1_image_susfs = get_sha1(image_susfs)
+        print("SHA1 for Image_susfs:", sha1_image_susfs)
+    else:
+        sha1_image_susfs = '0' * 40
 
     rich.print("[yellow][2/9][/yellow] [green]Generating patch file...[/green]")
     remove_path(local_path("bs_patches", "ksu.p"))
     remove_path(local_path("bs_patches", "susfs.p"))
     bsdiff4_file_diff(image_stock, image_ksu,   local_path("bs_patches", "ksu.p"))
-    bsdiff4_file_diff(image_stock, image_susfs, local_path("bs_patches", "susfs.p"))
+    if have_image_susfs:
+        bsdiff4_file_diff(image_stock, image_susfs, local_path("bs_patches", "susfs.p"))
 
     rich.print("[yellow][3/9][/yellow] [green]Regenerating module dependency information...[/green]")
     assert do_depmod_regen(local_path("_modules_hyperos", "_vendor_boot_modules"), "/lib/modules/") == 0

@@ -63,6 +63,8 @@ _LANG_DETECTED_KSU_IMG_WITH_MAGISK_PROMPT_3="If any problems occur, it's your ow
 _LANG_SELECT_SUSFS="Choose whether to install susfs support."
 _LANG_SELECT_SUSFS_PROMPT_1="susfs is an EXPERIMENTAL feature. Select No"
 _LANG_SELECT_SUSFS_PROMPT_2="unless you know and are sure you need it."
+_LANG_NO_SUSFS_SUPPORT_PROMPT_1="Please note that the kernel you are installing"
+_LANG_NO_SUSFS_SUPPORT_PROMPT_2="does not support susfs."
 
 _LANG_UNPACKING_KERNEL_MODULES="Unpacking kernel modules..."
 _LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_1="Detected Lineage OSS xiaomi touch HAL."

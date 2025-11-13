@@ -59,6 +59,8 @@ _LANG_DETECTED_KSU_IMG_WITH_MAGISK_PROMPT_3="如果发生任何问题, 请自己
 _LANG_SELECT_SUSFS="是否需要 susfs 支持?"
 _LANG_SELECT_SUSFS_PROMPT_1="susfs 是实验性功能."
 _LANG_SELECT_SUSFS_PROMPT_2="除非你了解并很明确自己需要它, 不然请选择否."
+_LANG_NO_SUSFS_SUPPORT_PROMPT_1="请注意, 你正在安装的内核不支持 susfs."
+_LANG_NO_SUSFS_SUPPORT_PROMPT_2=" "
 
 _LANG_UNPACKING_KERNEL_MODULES="正在解包内核模块..."
 _LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_1="检测到 Lineage OSS xiaomi touch HAL."

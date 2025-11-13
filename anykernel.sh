@@ -403,18 +403,26 @@ elif keycode_select \
 		ui_print " "
 		sleep 3
 	fi
-	if keycode_select \
-	    "$_LANG_SELECT_SUSFS" \
-	    " " \
-	    "$_LANG_NOTES" \
-	    "$_LANG_SELECT_SUSFS_PROMPT_1" \
-	    "$_LANG_SELECT_SUSFS_PROMPT_2"; then
-		ui_print "- $_LANG_PATCHING Kernel image..."
-		apply_patch ${home}/Image "$SHA1_STOCK" "$SHA1_SUSFS" ${home}/bs_patches/susfs.p
+	use_patch=${home}/bs_patches/ksu.p
+	if [ -f ${home}/bs_patches/susfs.p ]; then
+		if keycode_select \
+		    "$_LANG_SELECT_SUSFS" \
+		    " " \
+		    "$_LANG_NOTES" \
+		    "$_LANG_SELECT_SUSFS_PROMPT_1" \
+		    "$_LANG_SELECT_SUSFS_PROMPT_2"; then
+			use_patch=${home}/bs_patches/susfs.p
+		fi
 	else
-		ui_print "- $_LANG_PATCHING Kernel image..."
-		apply_patch ${home}/Image "$SHA1_STOCK" "$SHA1_KSU" ${home}/bs_patches/ksu.p
+		ui_print "- $_LANG_NO_SUSFS_SUPPORT_PROMPT_1"
+		ui_print "  $_LANG_NO_SUSFS_SUPPORT_PROMPT_2"
+		ui_print " "
+		sleep 3
 	fi
+	ui_print "- $_LANG_PATCHING Kernel image..."
+	apply_patch ${home}/Image "$SHA1_STOCK" "$SHA1_KSU" "$use_patch"
+
+	unset use_patch
 fi
 unset exist_ksu_lkm magisk_patched
 
