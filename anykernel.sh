@@ -90,7 +90,7 @@ apply_patch() {
 
 	file_sha1=$(sha1 $src_path)
 	[ "$file_sha1" == "$dst_sha1" ] && return 0
-	[ "$file_sha1" == "$src_sha1" ] && ${bin}/bspatch "$src_path" "$src_path" "$bs_patch"
+	[ "$file_sha1" == "$src_sha1" ] && ${bin}/hpatchz -f "$src_path" "$bs_patch" "$src_path" 
 	[ "$(sha1 $src_path)" == "$dst_sha1" ] || abort "! $_LANG_FAILED_TO_PATCH $src_path!"
 }
 

@@ -12,7 +12,6 @@ import zipfile
 from functools import wraps
 from contextlib import contextmanager
 
-import bsdiff4
 import rich
 
 from depmod_regen import main as do_depmod_regen
@@ -27,6 +26,7 @@ SIGN_PRIVATE_KEY_PASSWORD = 'pass:your_pk_password'
 
 assert sys.platform == "linux"
 assert shutil.which("7za")
+assert shutil.which("hdiffz")
 if SIGN_ZIP:
     assert shutil.which("java")
 
@@ -41,8 +41,6 @@ def timeit(func):
         print("(Cost: %0.1f seconds)" % (time.time() - time_start))
         return r
     return _wrap
-
-bsdiff4_file_diff = timeit(bsdiff4.file_diff)
 
 @contextmanager
 def change_dir(dir_path):
@@ -117,6 +115,10 @@ def make_zip(*include):
         raise
     return zip_path
 
+def create_hdiff_patch(src: str, dst: str, out_patch: str):
+    cp = subprocess.run(["hdiffz", "-c-zstd", "-SD", "-d", src, dst, out_patch])
+    cp.check_returncode()
+
 @timeit
 def make_7z(path_, output_file, extra_args=""):
     args = ["7za", "a", "-t7z", "-mx=9"]
@@ -153,12 +155,9 @@ def main_multi(build_version):
     temp_dtb_7z = temp_path("_dtb.7z")
     temp_mods_hos_7z = temp_path("_modules_hyperos.7z")
 
-    have_image_susfs = False
-
     assert os.path.exists(image_stock)
     assert os.path.exists(image_ksu)
-    if os.path.exists(image_susfs):
-        have_image_susfs = True
+    have_image_susfs = os.path.exists(image_susfs)
 
     rich.print("[yellow][1/9][/yellow] [green]Generating SHA1 for image files...[/green]")
     sha1_image_stock = get_sha1(image_stock)
@@ -174,9 +173,9 @@ def main_multi(build_version):
     rich.print("[yellow][2/9][/yellow] [green]Generating patch file...[/green]")
     remove_path(local_path("bs_patches", "ksu.p"))
     remove_path(local_path("bs_patches", "susfs.p"))
-    bsdiff4_file_diff(image_stock, image_ksu,   local_path("bs_patches", "ksu.p"))
+    create_hdiff_patch(image_stock, image_ksu,   local_path("bs_patches", "ksu.p"))
     if have_image_susfs:
-        bsdiff4_file_diff(image_stock, image_susfs, local_path("bs_patches", "susfs.p"))
+        create_hdiff_patch(image_stock, image_susfs, local_path("bs_patches", "susfs.p"))
 
     rich.print("[yellow][3/9][/yellow] [green]Regenerating module dependency information...[/green]")
     assert do_depmod_regen(local_path("_modules_hyperos", "_vendor_boot_modules"), "/lib/modules/") == 0
