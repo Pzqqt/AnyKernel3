@@ -699,6 +699,13 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 			${bin}/7za rn -bd $backup_package _restore_anykernel.sh anykernel.sh
 			${bin}/7za rn -bd $backup_package vendor_boot${slot} vendor_boot.img
 			${bin}/7za rn -bd $backup_package dtbo${slot} dtbo.img
+			# Remove unused binaries
+			${bin}/7za d  -bd $backup_package \
+				tools/7za tools/hpatchz tools/dtp tools/lpdump \
+				tools/e2fsck tools/mkfs.erofs tools/extract.erofs \
+				tools/fdtget tools/fdtput tools/keycheck \
+				tools/kmod tools/depmod tools/modprobe tools/resize2fs \
+				tools/vbmeta-disable-verification tools/vendor_boot_fix
 			sync
 
 			ui_print " "
