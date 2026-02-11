@@ -51,8 +51,8 @@ magiskboot, magiskpolicy (Magisk): GPLv3+
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-    Self compiled binaries from modified source:
-    https://github.com/Pzqqt/Magisk/tree/e9c0560d6c025fbff64fbbf6192b71c008d91ba8
+    Per Section 6(d), binaries compiled from the official sourcecode by Github Actions:
+    https://github.com/topjohnwu/Magisk/actions/runs/21770777788
 
 busybox: GPLv2
 
