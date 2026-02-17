@@ -474,7 +474,9 @@ if [ -n "$(ls /vendor/bin/hw/vendor.lineage.touch* 2>/dev/null)" ]; then
 	ui_print " "
 	ui_print "- $_LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_1"
 	ui_print "- $_LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_2"
+	cp -f ${home}/_alt/xiaomi_touch_los/panel_event_notifier.ko ${home}/_vendor_boot_modules/
 	cp -f ${home}/_alt/xiaomi_touch_los/* ${home}/_vendor_dlkm_modules/
+	need_depmod_regen_vendor_boot=true
 	need_depmod_regen_vendor_dlkm=true
 fi
 
