@@ -36,7 +36,7 @@ _LANG_CURRENT_SNAPSHOT_STATUS_PROMPT_2="请先使用 TWRP 高级菜单中的 \"�
 _LANG_CURRENT_SNAPSHOT_STATUS_PROMPT_3="以立即完成快照合并."
 
 _LANG_GUESS_ROM_MIUI="你当前的 rom 是 HyperOS 吗? (我猜是的)"
-_LANG_GUESS_ROM_AOSPA="你当前的 rom 是 AOSPA 吗? (我猜是的)"
+_LANG_GUESS_ROM_AOSPA="你当前的 rom 是 AOSPA/NeotericOS 吗? (我猜是的)"
 _LANG_GUESS_ROM_OSS_KERNEL="你的 rom 是基于 OSS 内核的吗?"
 
 _LANG_UNPACKING_KERNEL_IMAGE="正在解包内核镜像..."

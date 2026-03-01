@@ -329,7 +329,7 @@ is_aospa_rom=false
 is_oss_kernel_rom=false
 if [ -f /system/framework/MiuiBooster.jar ] && keycode_select "$_LANG_GUESS_ROM_MIUI"; then
 	is_miui_rom=true
-elif grep -qi 'aospa' /system/build.prop && keycode_select "$_LANG_GUESS_ROM_AOSPA"; then
+elif grep -qiE 'aospa|neoteric' /system/build.prop && keycode_select "$_LANG_GUESS_ROM_AOSPA"; then
 	is_aospa_rom=true
 elif keycode_select "$_LANG_GUESS_ROM_OSS_KERNEL"; then
 	is_oss_kernel_rom=true
@@ -878,7 +878,7 @@ set_perm 0 0 0644 ${vendor_boot_modules_dir}/*
 
 ${bin}/7za x ${home}/_dtb.7z -o${home}/ || abort "! $_LANG_FAILED_TO_UNPACK _dtb.7z!"
 
-if ${is_oss_kernel_rom} && (! grep -q 'dino' /system/build.prop); then
+if ${is_oss_kernel_rom}; then
 	mv ${home}/dtbo-1.img ${home}/dtbo.img
 	rm ${home}/dtbo-0.img
 else

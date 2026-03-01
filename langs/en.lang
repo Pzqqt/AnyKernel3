@@ -40,7 +40,7 @@ _LANG_CURRENT_SNAPSHOT_STATUS_PROMPT_2="Please use the \"Merge Snapshots\" featu
 _LANG_CURRENT_SNAPSHOT_STATUS_PROMPT_3="advanced menu first to merge snapshots immediately."
 
 _LANG_GUESS_ROM_MIUI="Is your current rom HyperOS? (I guess yes)"
-_LANG_GUESS_ROM_AOSPA="Is your current rom AOSPA? (I guess yes)"
+_LANG_GUESS_ROM_AOSPA="Is your current rom AOSPA/NeotericOS? (I guess yes)"
 _LANG_GUESS_ROM_OSS_KERNEL="Is your rom originally based on OSS kernel?"
 
 _LANG_UNPACKING_KERNEL_IMAGE="Unpacking kernel image..."
