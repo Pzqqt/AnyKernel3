@@ -8,7 +8,7 @@ import sys
 import shutil
 import weakref
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from typing import TypedDict, Set, Dict, Union, Final, Tuple
+from typing import Set, Dict, Union, Final, Tuple
 
 
 assert sys.platform == "linux"
@@ -27,6 +27,8 @@ except ImportError:
         raise NotImplementedError
 
 class Crc:
+
+    __slots__ = {"_crc", "_hex"}
 
     @staticmethod
     def crc_to_int(crc: str) -> int:
@@ -68,6 +70,8 @@ class Crc:
         return "Crc(%s)" % self._hex
 
 class KernelModule:
+
+    __slots__ = {"__path", "__name", "__modversions", "__export_modversions", "__cached_depends", "__weakref__"}
 
     def __init__(self, module_path: str):
         abs_path = os.path.abspath(module_path)
@@ -111,21 +115,10 @@ class KernelModule:
 
         self.__cached_depends: Union[None, Tuple[str, ...]] = None
 
-    @property
-    def path(self) -> str:
-        return self.__path
-
-    @property
-    def name(self) -> str:
-        return self.__name
-
-    @property
-    def modversions(self) -> Dict[str, Crc]:
-        return self.__modversions.copy()
-
-    @property
-    def export_modversions(self) -> Dict[str, Crc]:
-        return self.__export_modversions.copy()
+    path = property(lambda self: self.__path)
+    name = property(lambda self: self.__name)
+    modversions = property(lambda self: self.__modversions.copy())
+    export_modversions = property(lambda self: self.__export_modversions.copy())
 
     @property
     def depends(self) -> Tuple[str, ...]:
@@ -146,10 +139,21 @@ class KernelModule:
     def __repr__(self) -> str:
         return "KernelModule('%s')" % self.name
 
-class VirtualKernelSymbolInfo(TypedDict):
-    source: Union[None, KernelModule]
-    crc: Crc
-    used_by: Set[str]
+class VirtualKernelSymbolInfo:
+
+    __slots__ = {"__source", "__crc", "__used_by"}
+
+    def __init__(self, source: Union[None, KernelModule], crc: Crc, used_by: Set[str]):
+        self.__source = source
+        self.__crc = crc
+        self.__used_by = used_by
+
+    source = property(lambda self: self.__source)
+    crc = property(lambda self: self.__crc)
+    used_by = property(lambda self: self.__used_by.copy())
+
+    def _add_used_by(self, mod_name: str):
+        self.__used_by.add(mod_name)
 
 class VirtualKernel:
 
@@ -174,13 +178,8 @@ class VirtualKernel:
                     raise RuntimeError("Error parsing line %d of %s!" % (line_no, vmlinux_symvers_file)) from e
         self.__loaded_modules: Dict[str, KernelModule] = {}
 
-    @property
-    def symbols(self) -> Dict[str, VirtualKernelSymbolInfo]:
-        return self.__symbols.copy()
-
-    @property
-    def loaded_modules(self) -> Dict[str, KernelModule]:
-        return self.__loaded_modules.copy()
+    symbols = property(lambda self: self.__symbols.copy())
+    loaded_modules = property(lambda self: self.__loaded_modules.copy())
 
     def load_module(self, kernel_module: KernelModule) -> bool:
         if kernel_module.name in self.__loaded_modules.keys():
@@ -196,13 +195,13 @@ class VirtualKernel:
         if disagree_crc_symbols := {
             sym_name
             for sym_name, sym_crc in km_modversions.items()
-            if self.__symbols[sym_name]["crc"] != sym_crc
+            if self.__symbols[sym_name].crc != sym_crc
         }:
             for sym_name in sorted(disagree_crc_symbols):
                 print("%s: Disagrees about version of symbol %s, %s (%s) vs %s (%s)" % (
                     kernel_module.name, sym_name,
-                    self.__symbols[sym_name]["crc"],
-                    self.__symbols[sym_name]["source"].name if self.__symbols[sym_name]["source"] else "kernel",
+                    self.__symbols[sym_name].crc,
+                    self.__symbols[sym_name].source.name if self.__symbols[sym_name].source else "kernel",
                     km_modversions[sym_name], kernel_module.name,
                 ))
             if not self.ignore_crc_disagree:
@@ -218,7 +217,8 @@ class VirtualKernel:
                 used_by=set(),
             )
         for sym_name in km_modversions.keys():
-            self.__symbols[sym_name]["used_by"].add(kernel_module.name)
+            # noinspection PyProtectedMember
+            self.__symbols[sym_name]._add_used_by(kernel_module.name)
         self.__loaded_modules[kernel_module.name] = kernel_module
         if self.debug:
             print("Loaded kernel module %s" % kernel_module.name)
