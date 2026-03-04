@@ -52,7 +52,6 @@ KEYCODE_UP=42
 KEYCODE_DOWN=41
 
 ln -s ${bin}/kmod ${bin}/depmod
-ln -s ${bin}/kmod ${bin}/modprobe
 
 extract_erofs() {
 	local img_file=$1
@@ -364,12 +363,12 @@ exist_ksu_lkm=false
 if ${bin}/magiskboot cpio ${split_img}/ramdisk.cpio "exists kernelsu.ko"; then
 	${bin}/magiskboot cpio ${split_img}/ramdisk.cpio "extract kernelsu.ko ${home}/kernelsu.ko" || \
 		abort "! $_LANG_FAILED_TO_EXTRACT kernelsu.ko!"
-	if ${bin}/modprobe --show-modversions ${home}/kernelsu.ko | grep -qE '0x7c24b32d[[:space:]]+module_layout'; then
+	if strings ${home}/kernelsu.ko | grep -q 'clang version 12.0.5'; then
 		exist_ksu_lkm=true
 	else
 		ui_print "- $_LANG_DETECTED_INCOMPATIBLE_KSU_LKM"
 		ui_print "- $_LANG_UNINSTALLING_KSU_LKM"
-		# TODO: chomd init
+		# TODO: chmod init
 		if ${bin}/magiskboot cpio ${split_img}/ramdisk.cpio \
 		    "rm kernelsu.ko" \
 		    "rm init" \
@@ -706,7 +705,7 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 				tools/7za tools/hpatchz tools/dtp tools/lpdump \
 				tools/e2fsck tools/mkfs.erofs tools/extract.erofs \
 				tools/fdtget tools/fdtput tools/keycheck \
-				tools/kmod tools/depmod tools/modprobe tools/resize2fs \
+				tools/kmod tools/depmod tools/resize2fs \
 				tools/vbmeta-disable-verification tools/vendor_boot_fix
 			sync
 
