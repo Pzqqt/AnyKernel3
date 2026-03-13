@@ -242,7 +242,7 @@ class VirtualKernel:
                 module_path = line_split[0]
                 if not module_path.endswith(":"):
                     raise RuntimeError(
-                        "Error parsing line %d of %s!" % (line_no, os.path.join(modules_dir, "modules.load"))
+                        "Error parsing line %d of %s!" % (line_no, os.path.join(modules_dir, "modules.dep"))
                     )
                 module_path = module_path[:-1]
                 module_path = os.path.relpath(module_path, real_modules_path)
