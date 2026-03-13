@@ -427,9 +427,6 @@ elif keycode_select \
 fi
 unset exist_ksu_lkm magisk_patched
 
-# Fix unable to mount image as read-write in recovery
-$BOOTMODE || setenforce 0
-
 ui_print " "
 ui_print "- $_LANG_UNPACKING_KERNEL_MODULES"
 modules_pkg=${home}/_modules_hyperos.7z
@@ -779,6 +776,14 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 		fi
 
 		ui_print "- $_LANG_VENDOR_DLKM_MOUNT_RW"
+
+		# Fix unable to mount image as read-write
+		if ${BOOTMODE}; then
+			${bin}/magiskpolicy --live 'allow kernel app_data_file file { read write }'
+		else
+			setenforce 0
+		fi
+
 		mount ${home}/vendor_dlkm.img $extract_vendor_dlkm_dir -o rw -t ext4 || \
 			abort "! $_LANG_VENDOR_DLKM_MOUNT_RW_FAILED"
 
