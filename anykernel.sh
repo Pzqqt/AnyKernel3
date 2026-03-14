@@ -738,6 +738,15 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 
 	if ${vendor_dlkm_is_ext4}; then
 		ui_print "- $_LANG_VENDOR_DLKM_IS_EXT4"
+
+		# Fix unable to mount image as read-write
+		if ${BOOTMODE}; then
+			${bin}/magiskpolicy --live 'allow kernel { app_data_file tmpfs } file { read write }'
+		else
+			setenforce 0
+		fi
+		sleep 1
+
 		mount ${home}/vendor_dlkm.img $extract_vendor_dlkm_dir -o ro -t ext4 || \
 			abort "! $_LANG_VENDOR_DLKM_UNSUPPORTED"
 		vendor_dlkm_full_space=$(df -B1 | grep -E -m1 "$(basename $extract_vendor_dlkm_dir)\$" | awk '{print $2}')
@@ -776,13 +785,6 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 		fi
 
 		ui_print "- $_LANG_VENDOR_DLKM_MOUNT_RW"
-
-		# Fix unable to mount image as read-write
-		if ${BOOTMODE}; then
-			${bin}/magiskpolicy --live 'allow kernel app_data_file file { read write }'
-		else
-			setenforce 0
-		fi
 
 		mount ${home}/vendor_dlkm.img $extract_vendor_dlkm_dir -o rw -t ext4 || \
 			abort "! $_LANG_VENDOR_DLKM_MOUNT_RW_FAILED"
