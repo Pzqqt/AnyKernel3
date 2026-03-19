@@ -741,7 +741,13 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 
 		# Fix unable to mount image as read-write
 		if ${BOOTMODE}; then
-			${bin}/magiskpolicy --live 'allow kernel { app_data_file tmpfs } file { read write }'
+			fix_sepolicy_rule='allow kernel { app_data_file tmpfs } file { read write }'
+			if [ -x /data/adb/ksu/bin/ksud ]; then
+				/data/adb/ksu/bin/ksud sepolicy patch "$fix_sepolicy_rule"
+			else
+				${bin}/magiskpolicy --live "$fix_sepolicy_rule"
+			fi
+			unset fix_sepolicy_rule
 		else
 			setenforce 0
 		fi
