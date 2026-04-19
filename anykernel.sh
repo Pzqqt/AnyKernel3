@@ -558,8 +558,10 @@ if ${use_oss_msm_drm}; then
 	if [ -f /vendor/etc/displayconfig/display_id_4630946370515662721.xml ] || [ -f /vendor/etc/displayconfig/display_id_4630946480857061761.xml ]; then
 		# https://github.com/cupid-development/android_device_xiaomi_marble/commit/eee64379280d5bc680e91371679d788b63fe5039
 		cp -f ${home}/_alt/OSS-msm_drm-2.ko ${home}/_vendor_dlkm_modules/msm_drm.ko
+		cp -f ${home}/_alt/OSS-msm_drm-2.ko ${home}/_vendor_boot_modules/msm_drm.ko
 	else
 		cp -f ${home}/_alt/OSS-msm_drm.ko ${home}/_vendor_dlkm_modules/msm_drm.ko
+		cp -f ${home}/_alt/OSS-msm_drm.ko ${home}/_vendor_boot_modules/msm_drm.ko
 	fi
 fi
 unset use_oss_msm_drm
@@ -603,6 +605,7 @@ elif keycode_select \
 fi
 if ${use_oss_ir_driver}; then
 	cp -f ${home}/_alt/OSS-ir-spi.ko ${home}/_vendor_dlkm_modules/ir-spi.ko
+	cp -f ${home}/_alt/OSS-ir-spi.ko ${home}/_vendor_boot_modules/ir-spi.ko
 fi
 unset use_oss_ir_driver
 
@@ -616,8 +619,10 @@ if ${is_miui_rom}; then
 	    "$_LANG_SELECT_OSS_ZRAM_PROMPT_2" \
 	    "$_LANG_SELECT_OSS_ZRAM_PROMPT_3" \
 	    "$_LANG_SELECT_OSS_ZRAM_PROMPT_4"; then
-		cp -f ${home}/_alt/MI-zram.ko ${home}/_vendor_dlkm_modules/zram.ko
+		cp -f ${home}/_alt/MI-zram.ko     ${home}/_vendor_dlkm_modules/zram.ko
+		cp -f ${home}/_alt/MI-zram.ko     ${home}/_vendor_boot_modules/zram.ko
 		cp -f ${home}/_alt/MI-zsmalloc.ko ${home}/_vendor_dlkm_modules/zsmalloc.ko
+		cp -f ${home}/_alt/MI-zsmalloc.ko ${home}/_vendor_boot_modules/zsmalloc.ko
 	fi
 fi
 
