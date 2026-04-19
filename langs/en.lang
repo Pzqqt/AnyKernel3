@@ -67,7 +67,7 @@ _LANG_NO_SUSFS_SUPPORT_PROMPT_1="Please note that the kernel you are installing"
 _LANG_NO_SUSFS_SUPPORT_PROMPT_2="does not support susfs."
 
 _LANG_UNPACKING_KERNEL_MODULES="Unpacking kernel modules..."
-_LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_1="Detected Lineage OSS xiaomi touch HAL."
+_LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_1="Detected Lineage OSS xiaomi touch."
 _LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_2="Use the alternative touchscreen modules."
 
 _LANG_SELECT_360HZ="Always enable 360HZ touch sampling rate?"

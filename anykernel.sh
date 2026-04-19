@@ -52,6 +52,7 @@ KEYCODE_UP=42
 KEYCODE_DOWN=41
 
 ln -s ${bin}/kmod ${bin}/depmod
+ln -s ${bin}/kmod ${bin}/modinfo
 
 extract_erofs() {
 	local img_file=$1
@@ -353,6 +354,10 @@ do_backup_flag=false
 if [ ! -f /vendor_dlkm/lib/modules/vertmp ]; then
 	do_backup_flag=true
 fi
+is_lineageos_xiaomi_touch=false
+if ${bin}/modinfo /vendor_dlkm/lib/modules/xiaomi_touch.ko | grep -qi lineage; then
+	is_lineageos_xiaomi_touch=true
+fi
 $BOOTMODE || umount /vendor_dlkm
 
 # KernelSU
@@ -466,7 +471,7 @@ vendor_dlkm_modules_options_file=${home}/_vendor_dlkm_modules/modules.options
 [ -f $vendor_dlkm_modules_options_file ] || touch $vendor_dlkm_modules_options_file
 
 # xiaomi_touch.ko
-if [ -n "$(ls /vendor/bin/hw/vendor.lineage.touch* 2>/dev/null)" ]; then
+if ${is_lineageos_xiaomi_touch}; then
 	ui_print " "
 	ui_print "- $_LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_1"
 	ui_print "- $_LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_2"
@@ -475,6 +480,7 @@ if [ -n "$(ls /vendor/bin/hw/vendor.lineage.touch* 2>/dev/null)" ]; then
 	need_depmod_regen_vendor_boot=true
 	need_depmod_regen_vendor_dlkm=true
 fi
+unset is_lineageos_xiaomi_touch
 
 # goodix_core.ko
 if keycode_select \
@@ -707,7 +713,7 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 				tools/7za tools/hpatchz tools/dtp tools/lpdump \
 				tools/e2fsck tools/mkfs.erofs tools/extract.erofs \
 				tools/fdtget tools/fdtput tools/keycheck \
-				tools/kmod tools/depmod tools/resize2fs \
+				tools/kmod tools/depmod tools/modinfo tools/resize2fs \
 				tools/vbmeta-disable-verification tools/vendor_boot_fix
 			sync
 
