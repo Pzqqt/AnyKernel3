@@ -8,7 +8,7 @@ import sys
 import shutil
 import weakref
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from typing import Set, Dict, Union, Final, Tuple
+from typing import Final
 
 
 assert sys.platform == "linux"
@@ -40,7 +40,7 @@ class Crc:
     def int_to_crc(num: int) -> str:
         return '0x' + hex(num)[2:].zfill(8)
 
-    def __init__(self, crc: Union[str, int]):
+    def __init__(self, crc: str|int):
         if isinstance(crc, str):
             self._crc = self.crc_to_int(crc)
         elif isinstance(crc, int):
@@ -66,7 +66,7 @@ class Crc:
     __int__ = to_int
     __str__ = to_hex
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "Crc(%s)" % self._hex
 
 class KernelModule:
@@ -96,7 +96,7 @@ class KernelModule:
             self.__name = output
 
         # get module symbol versions
-        self.__modversions: Dict[str, Crc] = {}
+        self.__modversions: dict[str, Crc] = {}
         cp = subprocess.run(["modprobe", self.__path, "--show-modversions"], encoding="utf-8", capture_output=True)
         cp.check_returncode()
         output = cp.stdout.rstrip()
@@ -105,7 +105,7 @@ class KernelModule:
             self.__modversions[symbol] = Crc(crc_str)
 
         # get module exported symbol versions
-        self.__export_modversions: Dict[str, Crc] = {}
+        self.__export_modversions: dict[str, Crc] = {}
         cp = subprocess.run(["modprobe", self.__path, "--show-exports"], encoding="utf-8", capture_output=True)
         output = cp.stdout.rstrip()
         if cp.returncode == 0:
@@ -113,7 +113,7 @@ class KernelModule:
                 crc_str, symbol = line.strip().split()
                 self.__export_modversions[symbol] = Crc(crc_str)
 
-        self.__cached_depends: Union[None, Tuple[str, ...]] = None
+        self.__cached_depends: None|tuple[str, ...] = None
 
     path = property(lambda self: self.__path)
     name = property(lambda self: self.__name)
@@ -121,7 +121,7 @@ class KernelModule:
     export_modversions = property(lambda self: self.__export_modversions.copy())
 
     @property
-    def depends(self) -> Tuple[str, ...]:
+    def depends(self) -> tuple[str, ...]:
         if self.__cached_depends is None:
             cp = subprocess.run(
                 ["modinfo", "-F", "depends", self.__path],
@@ -143,7 +143,7 @@ class VirtualKernelSymbolInfo:
 
     __slots__ = {"__source", "__crc", "__used_by"}
 
-    def __init__(self, source: Union[None, KernelModule], crc: Crc, used_by: Set[str]):
+    def __init__(self, source: None|KernelModule, crc: Crc, used_by: set[str]):
         self.__source = source
         self.__crc = crc
         self.__used_by = used_by
@@ -160,7 +160,7 @@ class VirtualKernel:
     def __init__(self, vmlinux_symvers_file: str, *, ignore_crc_disagree: bool = False, debug: bool = False):
         self.ignore_crc_disagree = ignore_crc_disagree
         self.debug = debug
-        self.__symbols: Dict[str, VirtualKernelSymbolInfo] = {}
+        self.__symbols: dict[str, VirtualKernelSymbolInfo] = {}
         # load vmlinux.symvers
         with open(vmlinux_symvers_file, 'r', encoding="utf-8") as f:
             for line_no, line in enumerate(f.readlines(), 1):
@@ -176,7 +176,7 @@ class VirtualKernel:
                     )
                 except (IndexError, ValueError, TypeError) as e:
                     raise RuntimeError("Error parsing line %d of %s!" % (line_no, vmlinux_symvers_file)) from e
-        self.__loaded_modules: Dict[str, KernelModule] = {}
+        self.__loaded_modules: dict[str, KernelModule] = {}
 
     symbols = property(lambda self: self.__symbols.copy())
     loaded_modules = property(lambda self: self.__loaded_modules.copy())
@@ -289,7 +289,7 @@ class VirtualKernel:
                 return False
         return True
 
-    def __get_loaded_module(self, _module: Union[KernelModule, str]) -> KernelModule:
+    def __get_loaded_module(self, _module: KernelModule|str) -> KernelModule:
         if isinstance(_module, KernelModule):
             if _module is not self.__loaded_modules.get(_module.name):
                 raise Exception("Module '%s' is not in the list of loaded modules!" % _module.name)
@@ -301,11 +301,11 @@ class VirtualKernel:
             raise TypeError("'module' must be a KernelModule or str!")
         return _module
 
-    def get_module_depends(self, module: Union[KernelModule, str]) -> Set[str]:
+    def get_module_depends(self, module: KernelModule|str) -> set[str]:
         module = self.__get_loaded_module(module)
         return {self.__symbols[sym].source.name for sym in module.modversions.keys() if self.__symbols[sym].source}
 
-    def get_module_used_by(self, module: Union[KernelModule, str]) -> Set[str]:
+    def get_module_used_by(self, module: KernelModule|str) -> set[str]:
         module = self.__get_loaded_module(module)
         used_by = set()
         for sym in module.export_modversions.keys():
