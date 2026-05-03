@@ -143,10 +143,10 @@ class VirtualKernelSymbolInfo:
 
     __slots__ = {"__source", "__crc", "__used_by"}
 
-    def __init__(self, source: None|KernelModule, crc: Crc, used_by: set[str]):
+    def __init__(self, source: None|KernelModule, crc: Crc):
         self.__source = source
         self.__crc = crc
-        self.__used_by = used_by
+        self.__used_by : set[str] = set()
 
     source = property(lambda self: self.__source)
     crc = property(lambda self: self.__crc)
@@ -172,7 +172,6 @@ class VirtualKernel:
                     self.__symbols[symbol_name] = VirtualKernelSymbolInfo(
                         source=None,
                         crc=Crc(line.split()[0]),
-                        used_by=set(),
                     )
                 except (IndexError, ValueError, TypeError) as e:
                     raise RuntimeError("Error parsing line %d of %s!" % (line_no, vmlinux_symvers_file)) from e
@@ -214,7 +213,6 @@ class VirtualKernel:
             self.__symbols[sym_name] = VirtualKernelSymbolInfo(
                 source=weakref.proxy(kernel_module),
                 crc=sym_crc,
-                used_by=set(),
             )
         for sym_name in km_modversions.keys():
             # noinspection PyProtectedMember
