@@ -224,7 +224,7 @@ class VirtualKernel:
             print("Loaded kernel module %s" % kernel_module.name)
         return True
 
-    def load_modules(self, modules_load_file: str, real_modules_path: str = "") -> bool:
+    def load_modules(self, modules_load_file: str, real_modules_path: str) -> bool:
         # load modules.load
         with open(modules_load_file, 'r', encoding="utf-8") as f:
             modules = [m.strip() for m in f.readlines()]
