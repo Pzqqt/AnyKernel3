@@ -289,6 +289,29 @@ class VirtualKernel:
                 return False
         return True
 
+    def __get_loaded_module(self, _module: Union[KernelModule, str]) -> KernelModule:
+        if isinstance(_module, KernelModule):
+            if _module is not self.__loaded_modules.get(_module.name):
+                raise Exception("Module '%s' is not in the list of loaded modules!" % _module.name)
+        elif isinstance(_module, str):
+            module_name = _module
+            if not (_module := self.__loaded_modules.get(module_name)):
+                raise Exception("Module '%s' is not in the list of loaded modules!" % module_name)
+        else:
+            raise TypeError("'module' must be a KernelModule or str!")
+        return _module
+
+    def get_module_depends(self, module: Union[KernelModule, str]) -> Set[str]:
+        module = self.__get_loaded_module(module)
+        return {self.__symbols[sym].source.name for sym in module.modversions.keys() if self.__symbols[sym].source}
+
+    def get_module_used_by(self, module: Union[KernelModule, str]) -> Set[str]:
+        module = self.__get_loaded_module(module)
+        used_by = set()
+        for sym in module.export_modversions.keys():
+            used_by |= self.__symbols[sym].used_by
+        return used_by
+
 def main(vmlinux_symvers_file: str, *args: str) -> int:
     if not args or len(args) % 2 != 0:
         return 2
