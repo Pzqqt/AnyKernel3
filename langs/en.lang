@@ -112,6 +112,9 @@ _LANG_SELECT_DISGUISED_ADRENO730_PROMPT_2="Disguising the GPU model as Adreno730
 _LANG_SELECT_DISGUISED_ADRENO730_PROMPT_3="higher image quality and frame rate in some mobile"
 _LANG_SELECT_DISGUISED_ADRENO730_PROMPT_4="games, but the side effects are unknown."
 
+_LANG_SELECT_NTSYNC="Add NTSYNC support?"
+_LANG_SELECT_NTSYNC_PROMPT_1="Select No if you don't know what this means."
+
 _LANG_DEPMOD_REGEN_FAILED="Failed to regenerate module dependency info!"
 
 _LANG_SELECT_LAST="This is the last option."

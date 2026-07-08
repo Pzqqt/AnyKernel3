@@ -647,6 +647,17 @@ if keycode_select \
 	disguised_adreno730=true
 fi
 
+# ntsync.ko
+if keycode_select \
+    "$_LANG_SELECT_NTSYNC" \
+    " " \
+    "$_LANG_NOTES" \
+    "$_LANG_SELECT_NTSYNC_PROMPT_1"; then
+	cp -f ${home}/_alt/ntsync.ko ${home}/_vendor_dlkm_modules/ntsync.ko
+	echo 'ntsync.ko' >> ${home}/_vendor_dlkm_modules/modules.load
+	need_depmod_regen_vendor_dlkm=true
+fi
+
 # Do not load some Xiaomi special modules in AOSP roms
 if ! ${is_miui_rom}; then
 	# millet related modules
