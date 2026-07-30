@@ -4,7 +4,7 @@
 ### AnyKernel setup
 # global properties
 properties() { '
-kernel.string=Melt Kernel by Pzqqt
+kernel.string=Bouquet Kernel by Pzqqt
 do.devicecheck=1
 do.modules=0
 do.systemless=1
@@ -158,21 +158,6 @@ bytes_to_mb() {
 	echo $1 | awk '{printf "%.1fM", $1 / 1024 / 1024}'
 }
 
-check_super_device_size() {
-	# Check super device size
-	local block_device_size block_device_size_lp
-
-	block_device_size=$(get_size /dev/block/by-name/super) || \
-		abort "! $_LANG_FAILED_TO_GET_SUPER_SIZE_BLKDEV"
-	block_device_size_lp=$(${bin}/lpdump 2>/dev/null | grep -m1 -E 'Size: [[:digit:]]+ bytes$' | awk '{print $2}') || \
-		abort "! $_LANG_FAILED_TO_GET_SUPER_SIZE_LPDUMP"
-	ui_print "- ${_LANG_SUPER_SIZE}:"
-	ui_print "  - ${_LANG_SUPER_SIZE_BLKDEV}: $block_device_size"
-	ui_print "  - ${_LANG_SUPER_SIZE_LPDUMP}: $block_device_size_lp"
-	[ "$block_device_size" == "9663676416" ] && [ "$block_device_size_lp" == "9663676416" ] || \
-		abort "! $_LANG_SUPER_SIZE_MISMATCH"
-}
-
 # copy_gpu_pwrlevels_conf <orig dtb file> <new dtb file>
 copy_gpu_pwrlevels_conf() {
 	local orig_dtb=$1
@@ -245,11 +230,12 @@ depmod_regen() {
 }
 
 # Check firmware
+is_hyperos_fw=false
+is_hyperos_fw_with_new_adsp2=false
+is_hyperos_fw_with_newer_adsp2=false
 if strings /dev/block/bootdevice/by-name/xbl_config${slot} | grep -q 'led_blink'; then
 	ui_print "$_LANG_HOS_FIRMWARE_DETECTED"
 	is_hyperos_fw=true
-	is_hyperos_fw_with_new_adsp2=false
-	is_hyperos_fw_with_newer_adsp2=false
 	if is_mounted /vendor/firmware_mnt && [ -d /vendor/firmware_mnt/image ]; then
 		modem_mount_path=/vendor/firmware_mnt
 	else
@@ -289,10 +275,13 @@ fi
 
 if ! ${is_hyperos_fw}; then
 	ui_print " " "$_LANG_MIUI14_FIRMWARE_NOT_SUPPORT"
-	sleep 3
 	abort "$_LANG_ABORTING"
 fi
-unset is_hyperos_fw
+if ! ${is_hyperos_fw_with_newer_adsp2}; then
+	ui_print " " "$_LANG_UNSUPPORTED_FIRMWARE"
+	abort "$_LANG_ABORTING"
+fi
+unset is_hyperos_fw is_hyperos_fw_with_new_adsp2 is_hyperos_fw_with_newer_adsp2
 
 # Staging unmodified partition images
 mkdir -p ${home}/_orig
@@ -327,13 +316,21 @@ unset rc snapshot_status
 is_miui_rom=false
 is_aospa_rom=false
 is_oss_kernel_rom=false
-if [ -f /system/framework/MiuiBooster.jar ] && keycode_select "$_LANG_GUESS_ROM_MIUI"; then
+if [ -f /system/framework/MiuiBooster.jar ]; then
 	is_miui_rom=true
-elif grep -qiE 'aospa|neoteric' /system/build.prop && keycode_select "$_LANG_GUESS_ROM_AOSPA"; then
+elif grep -qiE 'aospa|neoteric' /system/build.prop ; then
 	is_aospa_rom=true
-elif keycode_select "$_LANG_GUESS_ROM_OSS_KERNEL"; then
+elif [ -f /vendor/bin/hw/android.hardware.ir-service.xiaomi -o -f /vendor/bin/hw/android.hardware.ir-service.lineage ] \
+    && [ -f /vendor/bin/sensor-notifier ] \
+    && [ -f /vendor/etc/displayconfig/display_id_4630946370515662721.xml ] \
+    && [ -f /vendor/etc/displayconfig/display_id_4630946480857061761.xml ]; then
 	is_oss_kernel_rom=true
 fi
+
+if ${is_miui_rom} || ${is_aospa_rom} || ! ${is_oss_kernel_rom} ; then
+	abort "$_LANG_UNSUPPORTED_ROM"
+fi
+unset is_miui_rom is_aospa_rom is_oss_kernel_rom
 
 [ -f ${home}/Image.7z ] || abort "! $_LANG_CANNOT_FOUND ${home}/Image.7z!"
 ui_print " "
@@ -359,6 +356,11 @@ if ${bin}/modinfo /vendor_dlkm/lib/modules/xiaomi_touch.ko | grep -qi lineage; t
 	is_lineageos_xiaomi_touch=true
 fi
 $BOOTMODE || umount /vendor_dlkm
+
+if ! ${is_lineageos_xiaomi_touch} ; then
+	abort "$_LANG_UNSUPPORTED_ROM"
+fi
+unset is_lineageos_xiaomi_touch
 
 # KernelSU
 [ -f ${split_img}/ramdisk.cpio ] || abort "! $_LANG_CANNOT_FOUND ramdisk.cpio!"
@@ -438,198 +440,21 @@ modules_pkg=${home}/_modules_hyperos.7z
 [ -f $modules_pkg ] || abort "! $_LANG_CANNOT_FOUND ${modules_pkg}!"
 ${bin}/7za x $modules_pkg -o${home}/ && [ -d ${home}/_vendor_boot_modules ] && [ -d ${home}/_vendor_dlkm_modules ] || \
 	abort "! $_LANG_FAILED_TO_UNPACK ${modules_pkg}!"
-if ${is_hyperos_fw_with_newer_adsp2}; then
-	cp -f ${home}/_alt/NEW2-qti_battery_charger_main.ko ${home}/_vendor_dlkm_modules/qti_battery_charger_main.ko
-	cp -f ${home}/_alt/NEW2-qti_battery_charger_main.ko ${home}/_vendor_boot_modules/qti_battery_charger_main.ko
-elif ${is_hyperos_fw_with_new_adsp2}; then
-	cp -f ${home}/_alt/NEW-qti_battery_charger_main.ko ${home}/_vendor_dlkm_modules/qti_battery_charger_main.ko
-	cp -f ${home}/_alt/NEW-qti_battery_charger_main.ko ${home}/_vendor_boot_modules/qti_battery_charger_main.ko
-fi
 unset modules_pkg
 
-remove_vendor_boot_modules() {
-	while [ $# != 0 ]; do
-		rm ${home}/_vendor_boot_modules/${1}.ko
-		sed -i "/^${1}\.ko/d" ${home}/_vendor_boot_modules/modules.load
-		sed -i "/^${1}\.ko/d" ${home}/_vendor_boot_modules/modules.load.recovery
-		shift
-	done
-}
-
-remove_vendor_dlkm_modules() {
-	while [ $# != 0 ]; do
-		rm ${home}/_vendor_dlkm_modules/${1}.ko
-		sed -i "/^${1}\.ko/d" ${home}/_vendor_dlkm_modules/modules.load
-		shift
-	done
-}
-
-need_depmod_regen_vendor_boot=false
 need_depmod_regen_vendor_dlkm=false
 
 vendor_dlkm_modules_options_file=${home}/_vendor_dlkm_modules/modules.options
 [ -f $vendor_dlkm_modules_options_file ] || touch $vendor_dlkm_modules_options_file
 
-# xiaomi_touch.ko
-if ${is_lineageos_xiaomi_touch}; then
-	ui_print " "
-	ui_print "- $_LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_1"
-	ui_print "- $_LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_2"
-	cp -f ${home}/_alt/xiaomi_touch_los/panel_event_notifier.ko ${home}/_vendor_boot_modules/
-	cp -f ${home}/_alt/xiaomi_touch_los/* ${home}/_vendor_dlkm_modules/
-	need_depmod_regen_vendor_boot=true
-	need_depmod_regen_vendor_dlkm=true
-fi
-unset is_lineageos_xiaomi_touch
-
-# goodix_core.ko
-if keycode_select \
-    "$_LANG_SELECT_360HZ" \
-    " " \
-    "$_LANG_NOTES" \
-    "$_LANG_SELECT_360HZ_PROMPT_1" \
-    "$_LANG_SELECT_360HZ_PROMPT_2"; then
-	echo "options goodix_core force_high_report_rate=y" >> $vendor_dlkm_modules_options_file
-fi
-
 # qti_battery_charger_main.ko
-qti_battery_charger_mod_options=""
 if keycode_select \
     "$_LANG_SELECT_REAL_BATTERY" \
     " " \
     "$_LANG_NOTES" \
     "$_LANG_SELECT_REAL_BATTERY_PROMPT_1" \
     "$_LANG_SELECT_REAL_BATTERY_PROMPT_2"; then
-	qti_battery_charger_mod_options="${qti_battery_charger_mod_options} report_real_capacity=y"
-fi
-
-do_fix_battery_usage=false
-if ${is_oss_kernel_rom}; then
-	do_fix_battery_usage=true
-elif ${is_miui_rom} || ${is_aospa_rom}; then
-	do_fix_battery_usage=false
-elif keycode_select \
-    "$_LANG_SELECT_FIX_BATTERY_USAGE" \
-    " " \
-    "$_LANG_NOTES" \
-    "$_LANG_SELECT_FIX_BATTERY_USAGE_PROMPT_1" \
-    "$_LANG_SELECT_FIX_BATTERY_USAGE_PROMPT_2"; then
-	do_fix_battery_usage=true
-fi
-if ${do_fix_battery_usage}; then
-	qti_battery_charger_mod_options="${qti_battery_charger_mod_options} fix_battery_usage=y"
-fi
-unset do_fix_battery_usage
-
-if [ -n "${qti_battery_charger_mod_options}" ]; then
-	qti_battery_charger_mod_options=$(echo "$qti_battery_charger_mod_options" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-	echo "options qti_battery_charger_main ${qti_battery_charger_mod_options}" >> $vendor_dlkm_modules_options_file
-fi
-unset qti_battery_charger_mod_options
-
-# Alternative wired headset buttons mode
-use_wired_btn_altmode=false
-if ${is_miui_rom}; then
-	use_wired_btn_altmode=false
-elif ${is_oss_kernel_rom} || ${is_aospa_rom}; then
-	use_wired_btn_altmode=true
-elif keycode_select \
-    "$_LANG_SELECT_WIRED_BTN_ALTMODE" \
-    " " \
-    "$_LANG_NOTES" \
-    "$_LANG_SELECT_WIRED_BTN_ALTMODE_PROMPT_1" \
-    "$_LANG_SELECT_WIRED_BTN_ALTMODE_PROMPT_2" \
-    "$_LANG_SELECT_WIRED_BTN_ALTMODE_PROMPT_3"; then
-	use_wired_btn_altmode=true
-fi
-if ${use_wired_btn_altmode}; then
-	echo "options machine_dlkm waipio_wired_btn_altmode=y" >> $vendor_dlkm_modules_options_file
-fi
-unset use_wired_btn_altmode
-
-# OSS msm_drm.ko
-use_oss_msm_drm=false
-if ${is_oss_kernel_rom} || ${is_aospa_rom} || [ -f /vendor/bin/sensor-notifier ]; then
-	use_oss_msm_drm=true
-elif ! ${is_miui_rom}; then  # For roms ported from other OS
-	use_oss_msm_drm=false
-elif keycode_select \
-    "$_LANG_SELECT_OSS_MSM_DRM" \
-    " " \
-    "$_LANG_NOTES" \
-    "$_LANG_SELECT_OSS_MSM_DRM_PROMPT_1"; then
-	use_oss_msm_drm=true
-fi
-if ${use_oss_msm_drm}; then
-	if [ -f /vendor/etc/displayconfig/display_id_4630946370515662721.xml ] || [ -f /vendor/etc/displayconfig/display_id_4630946480857061761.xml ]; then
-		# https://github.com/cupid-development/android_device_xiaomi_marble/commit/eee64379280d5bc680e91371679d788b63fe5039
-		cp -f ${home}/_alt/OSS-msm_drm-2.ko ${home}/_vendor_dlkm_modules/msm_drm.ko
-		cp -f ${home}/_alt/OSS-msm_drm-2.ko ${home}/_vendor_boot_modules/msm_drm.ko
-	else
-		cp -f ${home}/_alt/OSS-msm_drm.ko ${home}/_vendor_dlkm_modules/msm_drm.ko
-		cp -f ${home}/_alt/OSS-msm_drm.ko ${home}/_vendor_boot_modules/msm_drm.ko
-	fi
-fi
-unset use_oss_msm_drm
-
-# OSS camera.ko
-use_oss_camera_driver=false
-if ${is_oss_kernel_rom} || ${is_aospa_rom}; then
-	use_oss_camera_driver=true
-elif ! ${is_miui_rom}; then  # For roms ported from other OS
-	use_oss_camera_driver=false
-elif keycode_select \
-    "$_LANG_SELECT_OSS_CAMERA" \
-    " " \
-    "$_LANG_NOTES" \
-    "$_LANG_SELECT_OSS_CAMERA_PROMPT_1"; then
-	use_oss_camera_driver=true
-fi
-if ${use_oss_camera_driver}; then
-	cp -f ${home}/_alt/OSS-camera.ko ${home}/_vendor_dlkm_modules/camera.ko
-fi
-unset use_oss_camera_driver
-
-# OSS ir-spi.ko
-use_oss_ir_driver=false
-if ${is_miui_rom}; then
-	use_oss_ir_driver=false
-elif [ -n "$(ls /vendor/bin/hw/android.hardware.ir@* 2>/dev/null)" ]; then
-	ui_print " " "- $_LANG_IR_HAL_XIAOMI"
-	use_oss_ir_driver=false
-elif [ -f /vendor/bin/hw/android.hardware.ir-service.xiaomi ] || [ -f /vendor/bin/hw/android.hardware.ir-service.lineage ]; then
-	ui_print " " "- $_LANG_IR_HAL_LOS_OSS"
-	use_oss_ir_driver=true
-elif keycode_select \
-    "$_LANG_SELECT_OSS_IR" \
-    " " \
-    "$_LANG_NOTES" \
-    "$_LANG_SELECT_OSS_IR_PROMPT_1" \
-    "$_LANG_SELECT_OSS_IR_PROMPT_2" \
-    "$_LANG_SELECT_OSS_IR_PROMPT_3"; then
-	use_oss_ir_driver=true
-fi
-if ${use_oss_ir_driver}; then
-	cp -f ${home}/_alt/OSS-ir-spi.ko ${home}/_vendor_dlkm_modules/ir-spi.ko
-	cp -f ${home}/_alt/OSS-ir-spi.ko ${home}/_vendor_boot_modules/ir-spi.ko
-fi
-unset use_oss_ir_driver
-
-# OSS zram.ko & zsmalloc.ko
-if ${is_miui_rom}; then
-	if ! keycode_select \
-	    "$_LANG_SELECT_OSS_ZRAM" \
-	    " " \
-	    "$_LANG_NOTES" \
-	    "$_LANG_SELECT_OSS_ZRAM_PROMPT_1" \
-	    "$_LANG_SELECT_OSS_ZRAM_PROMPT_2" \
-	    "$_LANG_SELECT_OSS_ZRAM_PROMPT_3" \
-	    "$_LANG_SELECT_OSS_ZRAM_PROMPT_4"; then
-		cp -f ${home}/_alt/MI-zram.ko     ${home}/_vendor_dlkm_modules/zram.ko
-		cp -f ${home}/_alt/MI-zram.ko     ${home}/_vendor_boot_modules/zram.ko
-		cp -f ${home}/_alt/MI-zsmalloc.ko ${home}/_vendor_dlkm_modules/zsmalloc.ko
-		cp -f ${home}/_alt/MI-zsmalloc.ko ${home}/_vendor_boot_modules/zsmalloc.ko
-	fi
+	echo "options qti_battery_charger_main report_real_capacity=y" >> $vendor_dlkm_modules_options_file
 fi
 
 unset vendor_dlkm_modules_options_file
@@ -658,29 +483,10 @@ if keycode_select \
 	need_depmod_regen_vendor_dlkm=true
 fi
 
-# Do not load some Xiaomi special modules in AOSP roms
-if ! ${is_miui_rom}; then
-	# millet related modules
-	remove_vendor_dlkm_modules millet_core millet_binder millet_hs millet_oem_cgroup millet_pkg millet_sig binder_gki
-	# OSS sched-walt
-	cp -f ${home}/_alt/OSS-sched-walt.ko ${home}/_vendor_boot_modules/sched-walt.ko
-	remove_vendor_boot_modules metis mi_schedule migt
-	remove_vendor_dlkm_modules migt
-	# Others
-	remove_vendor_boot_modules extend_reclaim mi_freqwdg perf_helper xlogchar
-	remove_vendor_dlkm_modules binderinfo binder_prio mi_freqwdg miicmpfilter perf_helper xlogchar
-
-	need_depmod_regen_vendor_boot=true
-	need_depmod_regen_vendor_dlkm=true
-fi
-
-if ${need_depmod_regen_vendor_boot}; then
-	depmod_regen "${home}/_vendor_boot_modules" "/lib/modules/" || abort "! $_LANG_DEPMOD_REGEN_FAILED"
-fi
 if ${need_depmod_regen_vendor_dlkm}; then
 	depmod_regen "${home}/_vendor_dlkm_modules" "/vendor/lib/modules/" || abort "! $_LANG_DEPMOD_REGEN_FAILED"
 fi
-unset need_depmod_regen_vendor_boot need_depmod_regen_vendor_dlkm
+unset need_depmod_regen_vendor_dlkm
 
 if ! keycode_select \
     "$_LANG_SELECT_LAST" \
@@ -692,8 +498,6 @@ fi
 
 ui_print " "
 if true; then  # I don't want to adjust the indentation of the code block below, so leave it as is.
-	do_check_super_device_size=false
-
 	# Dump vendor_dlkm partition image
 	dd if=/dev/block/mapper/vendor_dlkm${slot} of=${home}/vendor_dlkm.img
 	cp ${home}/vendor_dlkm.img ${home}/_orig/vendor_dlkm.img
@@ -707,7 +511,7 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 			ui_print "- $_LANG_BACKUP_KERNEL_DOING_PROMPT_1"
 			ui_print "  $_LANG_BACKUP_KERNEL_DOING_PROMPT_2"
 
-			backup_package=/sdcard/Melt-restore-kernel-$(file_getprop /system/build.prop ro.build.version.incremental)-$(date +"%Y%m%d-%H%M%S").zip
+			backup_package=/sdcard/Bouquet-restore-kernel-$(file_getprop /system/build.prop ro.build.version.incremental)-$(date +"%Y%m%d-%H%M%S").zip
 
 			${bin}/7za a -tzip -bd $backup_package \
 				${home}/META-INF ${bin} ${home}/LICENSE ${home}/_restore_anykernel.sh \
@@ -721,11 +525,11 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 			${bin}/7za rn -bd $backup_package dtbo${slot} dtbo.img
 			# Remove unused binaries
 			${bin}/7za d  -bd $backup_package \
-				tools/7za tools/hpatchz tools/dtp tools/lpdump \
+				tools/7za tools/hpatchz tools/dtp \
 				tools/e2fsck tools/mkfs.erofs tools/extract.erofs \
 				tools/fdtget tools/fdtput tools/keycheck \
-				tools/kmod tools/depmod tools/modinfo tools/resize2fs \
-				tools/vbmeta-disable-verification tools/vendor_boot_fix
+				tools/kmod tools/modinfo tools/depmod tools/resize2fs \
+				tools/vbmeta-disable-verification
 			sync
 
 			ui_print " "
@@ -806,7 +610,6 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 			# e2fsck again
 			${bin}/e2fsck -f -y ${home}/vendor_dlkm.img
 
-			do_check_super_device_size=true
 			unset vendor_dlkm_resized_size
 		else
 			ui_print "- $_LANG_VENDOR_DLKM_RESIZE_NO_NEED"
@@ -845,23 +648,13 @@ if true; then  # I don't want to adjust the indentation of the code block below,
 			abort "! $_LANG_VENDOR_DLKM_REPACK_FAILED"
 		rm -rf ${extract_vendor_dlkm_dir}
 
-		if [ "$(get_size ${home}/vendor_dlkm.img)" -gt "$vendor_dlkm_block_size" ]; then
-			do_check_super_device_size=true
-		else
+		if [ "$(get_size ${home}/vendor_dlkm.img)" -lt "$vendor_dlkm_block_size" ]; then
 			# Fill the erofs image file to the same size as the vendor_dlkm partition
 			truncate -c -s $vendor_dlkm_block_size ${home}/vendor_dlkm.img
 		fi
 	fi
 
-	if ${do_check_super_device_size}; then
-		ui_print " "
-		ui_print "- $_LANG_SUPER_SIZE_NEED_CHECK_PROMPT_1"
-		ui_print "- $_LANG_SUPER_SIZE_NEED_CHECK_PROMPT_2"
-		check_super_device_size  # If the check here fails, it will be aborted directly.
-		ui_print "- $_LANG_SUPER_SIZE_NEED_CHECK_PASS"
-	fi
-
-	unset do_check_super_device_size vendor_dlkm_block_size vendor_dlkm_is_ext4 extract_vendor_dlkm_dir extract_vendor_dlkm_modules_dir
+	unset vendor_dlkm_block_size vendor_dlkm_is_ext4 extract_vendor_dlkm_dir extract_vendor_dlkm_modules_dir
 fi
 
 unset do_backup_flag
@@ -894,14 +687,6 @@ no_magisk_check=true
 # reset for vendor_boot patching
 reset_ak
 
-# Try to fix vendor_ramdisk size and vendor_ramdisk table entry information that was corrupted by old versions of magiskboot.
-${bin}/vendor_boot_fix "$block"
-case $? in
-	0) ui_print " " "- $_LANG_VENDOR_BOOT_FIX_SUCCESS";;
-	2) ;;  # The vendor_boot partition is normal and does not need to be repaired.
-	*) abort "! $_LANG_VENDOR_BOOT_FIX_FAILED";;
-esac
-
 # vendor_boot install
 dump_boot
 
@@ -911,14 +696,6 @@ cp ${home}/_vendor_boot_modules/* ${vendor_boot_modules_dir}/
 set_perm 0 0 0644 ${vendor_boot_modules_dir}/*
 
 ${bin}/7za x ${home}/_dtb.7z -o${home}/ || abort "! $_LANG_FAILED_TO_UNPACK _dtb.7z!"
-
-if ${is_oss_kernel_rom}; then
-	mv ${home}/dtbo-1.img ${home}/dtbo.img
-	rm ${home}/dtbo-0.img
-else
-	mv ${home}/dtbo-0.img ${home}/dtbo.img
-	rm ${home}/dtbo-1.img
-fi
 
 mkdir ${home}/_dtbs
 cp ${split_img}/dtb ${home}/_dtbs/dtb
@@ -950,8 +727,6 @@ unset dtb_img_splitted ukee_dtb
 write_boot  # Since dtbo.img exists in ${home}, the dtbo partition will also be flashed at this time
 
 ########## FLASH VENDOR_BOOT END ##########
-
-unset is_miui_rom is_aospa_rom is_oss_kernel_rom is_hyperos_fw_with_new_adsp2 is_hyperos_fw_with_newer_adsp2
 
 # Patch vbmeta
 ui_print " "

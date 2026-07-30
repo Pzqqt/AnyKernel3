@@ -14,20 +14,12 @@ _LANG_KEYCHECK_PROMPT_2="Please press the key..."
 _LANG_KEYCHECK_RESULT_YES="You chose Yes."
 _LANG_KEYCHECK_RESULT_NO="You chose No."
 
-# check_super_device_size
-_LANG_FAILED_TO_GET_SUPER_SIZE_BLKDEV="Failed to get super block device size (by blockdev)!"
-_LANG_FAILED_TO_GET_SUPER_SIZE_LPDUMP="Failed to get super block device size (by lpdump)!"
-_LANG_SUPER_SIZE="Super block device size"
-_LANG_SUPER_SIZE_BLKDEV="Read by blockdev"
-_LANG_SUPER_SIZE_LPDUMP="Read by lpdump"
-_LANG_SUPER_SIZE_MISMATCH="Super block device size mismatch!"
-
 # main
 _LANG_MIUI14_FIRMWARE_DETECTED="MIUI14 firmware detected!"
 _LANG_HOS_FIRMWARE_DETECTED="HyperOS firmware detected!"
 _LANG_NEW_ADSP2_FIRMWARE_DETECTED="New adsp2 firmware detected!"
 _LANG_NEWER_ADSP2_FIRMWARE_DETECTED="Newer adsp2 firmware detected!"
-_LANG_MIUI14_FIRMWARE_NOT_SUPPORT="Sorry! Melt Kernel dose not support MIUI14 firmware!"
+_LANG_MIUI14_FIRMWARE_NOT_SUPPORT="Sorry! Bouquet Kernel dose not support MIUI14 firmware!"
 
 _LANG_FAILED_TO_GET_SNAPSHOT_STATUS="Cannot get snapshot status via snapshotupdater_static!"
 _LANG_FAILED_TO_GET_SNAPSHOT_STATUS_PROMPT_1="If you are installing the kernel in an app, try using another app."
@@ -39,14 +31,13 @@ _LANG_CURRENT_SNAPSHOT_STATUS_PROMPT_1="Seems like you just installed a rom upda
 _LANG_CURRENT_SNAPSHOT_STATUS_PROMPT_2="Please use the \"Merge Snapshots\" feature in TWRP's"
 _LANG_CURRENT_SNAPSHOT_STATUS_PROMPT_3="advanced menu first to merge snapshots immediately."
 
-_LANG_GUESS_ROM_MIUI="Is your current rom HyperOS? (I guess yes)"
-_LANG_GUESS_ROM_AOSPA="Is your current rom AOSPA/NeotericOS? (I guess yes)"
-_LANG_GUESS_ROM_OSS_KERNEL="Is your rom originally based on OSS kernel?"
+_LANG_UNSUPPORTED_FIRMWARE="Unsupported firmware!"
+_LANG_UNSUPPORTED_ROM="Unsupported rom!"
 
 _LANG_UNPACKING_KERNEL_IMAGE="Unpacking kernel image..."
 _LANG_KERNEL_IMAGE_CORRUPTED="Kernel image is corrupted!"
 
-_LANG_DETECTED_INCOMPATIBLE_KSU_LKM="Detected KernelSU LKM incompatible with GKI."
+_LANG_DETECTED_INCOMPATIBLE_KSU_LKM="Incompatible KernelSU LKM detected."
 _LANG_UNINSTALLING_KSU_LKM="Uninstalling KernelSU LKM..."
 _LANG_UNINSTALLING_KSU_LKM_SUCCESS="Successfully uninstalled KernelSU LKM!"
 _LANG_UNINSTALLING_KSU_LKM_FAILED="Failed to uninstall KernelSU LKM!"
@@ -67,44 +58,10 @@ _LANG_NO_SUSFS_SUPPORT_PROMPT_1="Please note that the kernel you are installing"
 _LANG_NO_SUSFS_SUPPORT_PROMPT_2="does not support susfs."
 
 _LANG_UNPACKING_KERNEL_MODULES="Unpacking kernel modules..."
-_LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_1="Detected Lineage OSS xiaomi touch."
-_LANG_DETECTED_OSS_XIAOMI_TOUCH_PROMPT_2="Use the alternative touchscreen modules."
-
-_LANG_SELECT_360HZ="Always enable 360HZ touch sampling rate?"
-_LANG_SELECT_360HZ_PROMPT_1="Always enabling 360HZ will NOT improve the daily"
-_LANG_SELECT_360HZ_PROMPT_2="use experience and increase power consumption."
 
 _LANG_SELECT_REAL_BATTERY="Make device show more realistic battery percentage?"
 _LANG_SELECT_REAL_BATTERY_PROMPT_1="This will sometimes make it difficult to charge"
 _LANG_SELECT_REAL_BATTERY_PROMPT_2="the device to 100%."
-
-_LANG_SELECT_FIX_BATTERY_USAGE="Fix battery usage issue?"
-_LANG_SELECT_FIX_BATTERY_USAGE_PROMPT_1="Select Yes if you find that the battery usage data"
-_LANG_SELECT_FIX_BATTERY_USAGE_PROMPT_2="in the system settings is not displayed."
-
-_LANG_SELECT_WIRED_BTN_ALTMODE="Use alternative wired headset buttons mode?"
-_LANG_SELECT_WIRED_BTN_ALTMODE_PROMPT_1="Select Yes if you find that the volume buttons on"
-_LANG_SELECT_WIRED_BTN_ALTMODE_PROMPT_2="your wired headset are not working properly."
-_LANG_SELECT_WIRED_BTN_ALTMODE_PROMPT_3="Select No if you are using MIUI/HyperOS rom."
-
-_LANG_SELECT_OSS_MSM_DRM="Use open source display drivers?"
-_LANG_SELECT_OSS_MSM_DRM_PROMPT_1="Select No if you don't know what this means."
-
-_LANG_SELECT_OSS_CAMERA="Use open source camera drivers?"
-_LANG_SELECT_OSS_CAMERA_PROMPT_1="Select No if you don't know what this means."
-
-_LANG_IR_HAL_XIAOMI="Detected Xiaomi stock IR HAL. Use stock IR driver."
-_LANG_IR_HAL_LOS_OSS="Detected Lineage OSS IR HAL. Use OSS IR driver."
-_LANG_SELECT_OSS_IR="Use open source IR driver?"
-_LANG_SELECT_OSS_IR_PROMPT_1="Select Yes if you are using AOSP rom and find that"
-_LANG_SELECT_OSS_IR_PROMPT_2="IR does not working properly."
-_LANG_SELECT_OSS_IR_PROMPT_3="Select No if you are using MIUI/HyperOS rom."
-
-_LANG_SELECT_OSS_ZRAM="Use open source zram kernel modules?"
-_LANG_SELECT_OSS_ZRAM_PROMPT_1="Using the open source zram kernel module means"
-_LANG_SELECT_OSS_ZRAM_PROMPT_2="giving up Xiaomi's special optimizations of"
-_LANG_SELECT_OSS_ZRAM_PROMPT_3="zram for MIUI/HyperOS roms."
-_LANG_SELECT_OSS_ZRAM_PROMPT_4="Select No if you don't know what this means."
 
 _LANG_SELECT_DISGUISED_ADRENO730="Disguised the GPU model as Adreno730?"
 _LANG_SELECT_DISGUISED_ADRENO730_PROMPT_1="The GPU model of Snapdragon 8+ Gen1 is Adreno730."
@@ -122,7 +79,7 @@ _LANG_SELECT_LAST_PROMPT_1="Select Yes to start the installation."
 _LANG_SELECT_LAST_PROMPT_2="Select No to exit the installer."
 _LANG_SELECT_LAST_ABORT="Abort by user."
 
-_LANG_BACKUP_KERNEL_NOTE="It looks like you are installing Melt Kernel for the first time."
+_LANG_BACKUP_KERNEL_NOTE="It looks like you are installing Bouquet Kernel for the first time."
 _LANG_SELECT_BACKUP_KERNEL="Backup the current kernel?"
 _LANG_BACKUP_KERNEL_DOING_PROMPT_1="Backing up kernel, vendor_boot, vendor_dlkm"
 _LANG_BACKUP_KERNEL_DOING_PROMPT_2="and dtbo partition..."
@@ -150,9 +107,6 @@ _LANG_VENDOR_DLKM_UPDATEING="Updating /vendor_dlkm image..."
 _LANG_VENDOR_DLKM_UPDATE_FAILED="Failed to update modules! No enough free space?"
 _LANG_VENDOR_DLKM_REPACKING="Repacking /vendor_dlkm image..."
 _LANG_VENDOR_DLKM_REPACK_FAILED="Failed to repack the vendor_dlkm image!"
-_LANG_SUPER_SIZE_NEED_CHECK_PROMPT_1="The generated image file is larger than the partition size."
-_LANG_SUPER_SIZE_NEED_CHECK_PROMPT_2="Checking super partition size..."
-_LANG_SUPER_SIZE_NEED_CHECK_PASS="Pass!"
 
 _LANG_VENDOR_BOOT_FIX_SUCCESS="Successfully repaired the vendor_boot partition!"
 _LANG_VENDOR_BOOT_FIX_FAILED="Failed to repair vendor_boot partition!"

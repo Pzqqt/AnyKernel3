@@ -18,7 +18,7 @@ from depmod_regen import main as do_depmod_regen
 from simulate_load_kernel_modules import main as do_simulate_load_kernel_modules
 
 
-VMLINUX_SYMVERS_FILE = '/home/pzqqt/working/android_kernel_xiaomi_marble/out/vmlinux.symvers'
+VMLINUX_SYMVERS_FILE = 'Image_vmlinux.symvers'
 SIGN_ZIP = False
 APKSIGNER_JAR = 'apksigner.jar'
 SIGN_PRIVATE_KEY = 'your_pk.jks'
@@ -31,7 +31,7 @@ if SIGN_ZIP:
     assert shutil.which("java")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PACKAGE_NAME_MULTI = "Melt-marble-%s-multi.zip"
+PACKAGE_NAME_MULTI = "Bouquet-Kernel-%s.zip"
 
 def timeit(func):
     @wraps(func)

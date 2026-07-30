@@ -1,0 +1,1 @@
+options dwc3_msm ep_addr_rxdbg_mask=0 ep_addr_txdbg_mask=0
